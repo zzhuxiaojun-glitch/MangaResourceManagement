@@ -33,6 +33,10 @@ export function Navbar() {
     { href: '/books', label: '电子书' },
   ];
 
+  const maintainers = [
+    { name: '培风与植土', url: '' },
+  ];
+
   return (
     <nav className="border-b bg-white sticky top-0 z-10 shadow-sm">
       <div className="container mx-auto px-4 py-3">
@@ -70,28 +74,57 @@ export function Navbar() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 whitespace-nowrap">
-            {user ? (
-              <>
-                <Link href="/admin">
-                  <Button variant="outline" size="sm">
-                    <LayoutDashboard className="h-4 w-4 mr-2" />
-                    后台
+          <div className="flex items-center gap-3">
+            <div className="text-right">
+              <div className="text-xs text-gray-500 mb-1">网站维护者</div>
+              <div className="flex items-center gap-2">
+                {maintainers.map((maintainer, index) => (
+                  <span key={index}>
+                    {maintainer.url ? (
+                      <a
+                        href={maintainer.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                      >
+                        {maintainer.name}
+                      </a>
+                    ) : (
+                      <span className="text-sm font-medium text-gray-600 cursor-not-allowed">
+                        {maintainer.name}
+                      </span>
+                    )}
+                  </span>
+                ))}
+              </div>
+              <div className="text-xs text-gray-400 mt-1">
+                点击维护者id，可查看维护者个人主页~
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 whitespace-nowrap border-l pl-3">
+              {user ? (
+                <>
+                  <Link href="/admin">
+                    <Button variant="outline" size="sm">
+                      <LayoutDashboard className="h-4 w-4 mr-2" />
+                      后台
+                    </Button>
+                  </Link>
+                  <Button variant="ghost" size="sm" onClick={handleLogout}>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    退出
+                  </Button>
+                </>
+              ) : (
+                <Link href="/admin/login">
+                  <Button size="sm">
+                    <LogIn className="h-4 w-4 mr-2" />
+                    登录
                   </Button>
                 </Link>
-                <Button variant="ghost" size="sm" onClick={handleLogout}>
-                  <LogOut className="h-4 w-4 mr-2" />
-                  退出
-                </Button>
-              </>
-            ) : (
-              <Link href="/admin/login">
-                <Button size="sm">
-                  <LogIn className="h-4 w-4 mr-2" />
-                  登录
-                </Button>
-              </Link>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </div>
