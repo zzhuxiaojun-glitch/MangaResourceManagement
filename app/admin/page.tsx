@@ -5,7 +5,9 @@ import { supabase } from '@/lib/supabase';
 import { AdminNav } from '@/components/admin-nav';
 import { ProtectedRoute } from '@/lib/protected-route';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BookOpen, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { BookOpen, CheckCircle2, XCircle, AlertCircle, Plus, Upload } from 'lucide-react';
+import Link from 'next/link';
 
 function DashboardContent() {
   const [stats, setStats] = useState({
@@ -46,7 +48,23 @@ function DashboardContent() {
       <AdminNav />
 
       <main className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8">仪表盘</h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-bold">仪表盘</h1>
+          <div className="flex gap-3">
+            <Link href="/admin/titles/new">
+              <Button size="lg">
+                <Plus className="h-5 w-5 mr-2" />
+                添加资源
+              </Button>
+            </Link>
+            <Link href="/admin/import">
+              <Button size="lg" variant="outline">
+                <Upload className="h-5 w-5 mr-2" />
+                批量导入
+              </Button>
+            </Link>
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card>

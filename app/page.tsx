@@ -61,20 +61,39 @@ export default function HomePage() {
           <section className="mb-12">
             <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
               <Folder className="h-6 w-6" />
-              分类浏览
+              资源分类
             </h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-              {categories.map((category) => (
-                <Link
-                  key={category.id}
-                  href={`/c/${category.id}`}
-                  className="p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow text-center border border-gray-200"
-                >
-                  <div className="text-lg font-semibold text-gray-800">
-                    {category.name}
-                  </div>
-                </Link>
-              ))}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Link href="/manga">
+                <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                  <CardHeader>
+                    <CardTitle className="text-xl">漫画</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-600">浏览所有漫画资源，支持标签筛选</p>
+                  </CardContent>
+                </Card>
+              </Link>
+              <Link href="/anime">
+                <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                  <CardHeader>
+                    <CardTitle className="text-xl">动画</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-600">浏览所有动画资源</p>
+                  </CardContent>
+                </Card>
+              </Link>
+              <Link href="/books">
+                <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                  <CardHeader>
+                    <CardTitle className="text-xl">电子书</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-600">浏览所有电子书资源</p>
+                  </CardContent>
+                </Card>
+              </Link>
             </div>
           </section>
         )}

@@ -76,6 +76,9 @@ export default function LoginPage() {
               {loading ? '登录中...' : '登录'}
             </Button>
           </form>
+          <div className="mt-6 text-center text-xs text-gray-500">
+            管理员账号由站点管理员手动创建，如需开通请联系管理员。
+          </div>
         </CardContent>
       </Card>
     </div>
