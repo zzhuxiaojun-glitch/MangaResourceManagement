@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { supabase, TitleWithCategory } from '@/lib/supabase';
 import { Navbar } from '@/components/navbar';
+import { CategoryFilter } from '@/components/category-filter';
+import { ANIME_TYPES } from '@/lib/constants';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,6 +16,7 @@ export default function AnimePage() {
   const [titles, setTitles] = useState<TitleWithCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedType, setSelectedType] = useState<string>('');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
 
   useEffect(() => {
@@ -44,7 +47,12 @@ export default function AnimePage() {
     setLoading(false);
   }
 
+  const handleTypeChange = (type: string) => {
+    setSelectedType((prev) => (prev === type ? '' : type));
+  };
+
   const clearFilters = () => {
+    setSelectedType('');
     setSelectedStatus('all');
     setSearchTerm('');
   };
@@ -57,6 +65,10 @@ export default function AnimePage() {
         title.author.toLowerCase().includes(term) ||
         title.tags.toLowerCase().includes(term);
       if (!matchesSearch) return false;
+    }
+
+    if (selectedType && (title as any).anime_type !== selectedType) {
+      return false;
     }
 
     if (selectedStatus !== 'all' && title.status !== selectedStatus) {
@@ -74,36 +86,49 @@ export default function AnimePage() {
         <h1 className="text-3xl font-bold mb-6">动画资源</h1>
 
         <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <div className="flex gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                placeholder="搜索作品、作者、标签..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+          <div className="space-y-4">
+            <div className="flex gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  placeholder="搜索作品、作者、标签..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+
+              <select
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value)}
+                className="px-4 py-2 border rounded-md"
+              >
+                <option value="all">全部状态</option>
+                <option value="有效">有效</option>
+                <option value="失效">失效</option>
+                <option value="待补">待补</option>
+                <option value="连载中">连载中</option>
+                <option value="已完结">已完结</option>
+              </select>
+
+              {(selectedType || selectedStatus !== 'all' || searchTerm) && (
+                <Button variant="outline" onClick={clearFilters}>
+                  <X className="h-4 w-4 mr-2" />
+                  清空筛选
+                </Button>
+              )}
             </div>
 
-            <select
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="px-4 py-2 border rounded-md"
-            >
-              <option value="all">全部状态</option>
-              <option value="有效">有效</option>
-              <option value="失效">失效</option>
-              <option value="待补">待补</option>
-              <option value="连载中">连载中</option>
-              <option value="已完结">已完结</option>
-            </select>
-
-            {(selectedStatus !== 'all' || searchTerm) && (
-              <Button variant="outline" onClick={clearFilters}>
-                <X className="h-4 w-4 mr-2" />
-                清空筛选
-              </Button>
-            )}
+            <CategoryFilter
+              label="分类"
+              categories={ANIME_TYPES.map((t) => t.label)}
+              selectedCategories={selectedType ? [ANIME_TYPES.find((t) => t.value === selectedType)?.label || ''] : []}
+              onCategoryChange={(label) => {
+                const type = ANIME_TYPES.find((t) => t.label === label);
+                if (type) handleTypeChange(type.value);
+              }}
+              multiSelect={false}
+            />
           </div>
         </div>
 

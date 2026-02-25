@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { supabase, TitleWithCategory } from '@/lib/supabase';
 import { Navbar } from '@/components/navbar';
+import { CategoryFilter } from '@/components/category-filter';
+import { MANGA_TAGS } from '@/lib/constants';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,9 +18,6 @@ export default function MangaPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
-  const [availableTags, setAvailableTags] = useState<string[]>([]);
-
-  const presetTags = ['漫画家作品合集', '生肉日漫', 'BL', 'GL', 'SF', '少年', '少女', '青年'];
 
   useEffect(() => {
     loadTitles();
@@ -46,20 +45,6 @@ export default function MangaPage() {
 
     if (titlesData) {
       setTitles(titlesData);
-
-      const tagsSet = new Set<string>();
-      titlesData.forEach((title) => {
-        if (title.tags) {
-          title.tags.split(',').forEach((tag: string) => {
-            const trimmed = tag.trim();
-            if (trimmed) tagsSet.add(trimmed);
-          });
-        }
-      });
-
-      presetTags.forEach((tag) => tagsSet.add(tag));
-
-      setAvailableTags(Array.from(tagsSet).sort());
     }
 
     setLoading(false);
@@ -141,21 +126,13 @@ export default function MangaPage() {
               )}
             </div>
 
-            <div>
-              <div className="text-sm font-medium mb-2">标签筛选（可多选）：</div>
-              <div className="flex flex-wrap gap-2">
-                {availableTags.map((tag) => (
-                  <Badge
-                    key={tag}
-                    variant={selectedTags.includes(tag) ? 'default' : 'outline'}
-                    className="cursor-pointer hover:bg-blue-100"
-                    onClick={() => toggleTag(tag)}
-                  >
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-            </div>
+            <CategoryFilter
+              label="标签筛选（可多选）"
+              categories={[...MANGA_TAGS]}
+              selectedCategories={selectedTags}
+              onCategoryChange={toggleTag}
+              multiSelect={true}
+            />
           </div>
         </div>
 
