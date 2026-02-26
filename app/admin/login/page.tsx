@@ -29,9 +29,23 @@ export default function LoginPage() {
       });
       router.push('/admin');
     } catch (error: any) {
+      console.error('Login error:', error);
+
+      let errorMessage = '邮箱或密码错误';
+
+      if (error.message) {
+        if (error.message.includes('Email not confirmed')) {
+          errorMessage = '邮箱未确认。请前往 Supabase 后台确认用户邮箱。';
+        } else if (error.message.includes('Invalid login credentials')) {
+          errorMessage = '邮箱或密码错误，请检查输入';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+
       toast({
         title: '登录失败',
-        description: error.message || '邮箱或密码错误',
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {
