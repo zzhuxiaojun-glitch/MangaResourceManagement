@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { supabase, Category } from '@/lib/supabase';
 import { AdminNav } from '@/components/admin-nav';
 import { ProtectedRoute } from '@/lib/protected-route';
@@ -15,7 +16,7 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, FileText, AlertCircle } from 'lucide-react';
+import { Upload, FileText, AlertCircle, FileSpreadsheet } from 'lucide-react';
 
 type ImportResult = {
   newTitles: number;
@@ -26,6 +27,7 @@ type ImportResult = {
 };
 
 function ImportContent() {
+  const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [file, setFile] = useState<File | null>(null);
@@ -248,7 +250,19 @@ function ImportContent() {
       <AdminNav />
 
       <main className="container mx-auto px-4 py-8 max-w-4xl">
-        <h1 className="text-3xl font-bold mb-8">CSV 导入</h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-bold">CSV 导入</h1>
+
+          {/* CSV 转换器按钮 - 格式转换工具，不直接写入数据库 */}
+          <Button
+            variant="outline"
+            onClick={() => router.push('/admin/import/converter')}
+            className="flex items-center gap-2"
+          >
+            <FileSpreadsheet className="h-4 w-4" />
+            CSV 转换器
+          </Button>
+        </div>
 
         <Card className="mb-8">
           <CardHeader>
