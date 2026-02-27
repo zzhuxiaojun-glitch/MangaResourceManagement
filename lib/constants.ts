@@ -23,3 +23,7 @@ export const STATUS_OPTIONS = [
   { value: '连载中', label: '连载中' },
   { value: '已完结', label: '已完结' },
 ] as const;
+
+// 后台管理路径常量
+// 如需修改后台路径，只需更改此处即可，所有相关页面会自动更新
+export const ADMIN_BASE_PATH = '/MangaReader/admin';

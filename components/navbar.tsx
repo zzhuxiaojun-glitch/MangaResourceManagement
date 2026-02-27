@@ -104,7 +104,7 @@ export function Navbar() {
 
             {/*
               隐藏登录入口，防止恶意访问
-              登录页面仍然存在于 /MangaReader/admin/login
+              登录页面路径由 lib/constants.ts 中的 ADMIN_BASE_PATH 定义
               只是不在全站导航栏显示入口
             */}
             <div className="flex items-center gap-2 whitespace-nowrap border-l pl-3">

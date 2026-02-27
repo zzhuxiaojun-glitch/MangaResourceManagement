@@ -9,6 +9,9 @@
  * 3. 添加注册审核机制
  * 4. 实施用户角色和权限管理
  *
+ * 路径配置：统一使用 lib/constants.ts 中的 ADMIN_BASE_PATH
+ * 如需修改后台路径，只需更改 ADMIN_BASE_PATH 常量即可
+ *
  * 参考 lib/auth-context.tsx 中的 signUp 方法注释了解更多安全建议
  */
 
@@ -23,6 +26,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
+import { ADMIN_BASE_PATH } from '@/lib/constants';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -151,7 +155,7 @@ export default function RegisterPage() {
             <p className="text-sm text-gray-600">
               已有账号？{' '}
               <Link
-                href="/MangaReader/admin/login"
+                href={`${ADMIN_BASE_PATH}/login`}
                 className="text-blue-600 hover:text-blue-700 font-medium"
               >
                 立即登录

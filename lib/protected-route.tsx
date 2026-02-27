@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from './auth-context';
+import { ADMIN_BASE_PATH } from './constants';
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -11,7 +12,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!loading && !user) {
       // 重定向到真实的后台登录路径（隐藏真实入口）
-      router.push('/MangaReader/admin/login');
+      router.push(`${ADMIN_BASE_PATH}/login`);
     }
   }, [user, loading, router]);
 

@@ -2,19 +2,21 @@
  * 重定向页面
  *
  * 说明：为了安全考虑，此页面会自动重定向到真实的后台登录路径
- * 真实路径为 /MangaReader/admin/login，以隐藏真实的后台入口
+ * 真实路径使用 lib/constants.ts 中的 ADMIN_BASE_PATH 配置
+ * 如需修改后台路径，只需更改 ADMIN_BASE_PATH 常量即可
  */
 
 'use client';
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { ADMIN_BASE_PATH } from '@/lib/constants';
 
 export default function LoginRedirect() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace('/MangaReader/admin/login');
+    router.replace(`${ADMIN_BASE_PATH}/login`);
   }, [router]);
 
   return (
