@@ -10,7 +10,8 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push('/admin/login');
+      // 重定向到真实的后台登录路径（隐藏真实入口）
+      router.push('/MangaReader/admin/login');
     }
   }, [user, loading, router]);
 
