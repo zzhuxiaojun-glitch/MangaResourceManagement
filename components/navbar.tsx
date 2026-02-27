@@ -102,8 +102,13 @@ export function Navbar() {
               </div>
             </div>
 
+            {/*
+              隐藏登录入口，防止恶意访问
+              登录页面仍然存在于 /MangaReader/admin/login
+              只是不在全站导航栏显示入口
+            */}
             <div className="flex items-center gap-2 whitespace-nowrap border-l pl-3">
-              {user ? (
+              {user && (
                 <>
                   <Link href="/admin">
                     <Button variant="outline" size="sm">
@@ -116,13 +121,6 @@ export function Navbar() {
                     退出
                   </Button>
                 </>
-              ) : (
-                <Link href="/admin/login">
-                  <Button size="sm">
-                    <LogIn className="h-4 w-4 mr-2" />
-                    登录
-                  </Button>
-                </Link>
               )}
             </div>
           </div>
