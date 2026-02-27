@@ -105,8 +105,8 @@ function ConverterContent() {
           if (results.data && results.data.length > 0) {
             setParsedData(results.data);
 
-            // 提取列名
-            const columnNames = results.meta.fields || [];
+            // 提取列名（过滤掉空字符串）
+            const columnNames = (results.meta.fields || []).filter(field => field && field.trim() !== '');
             setHeaders(columnNames);
 
             // 默认选择第一列作为原始文本列
@@ -586,7 +586,7 @@ function ConverterContent() {
                     <SelectValue placeholder="选择包含混合信息的列" />
                   </SelectTrigger>
                   <SelectContent>
-                    {headers.map((header) => (
+                    {headers.filter(header => header && header.trim() !== '').map((header) => (
                       <SelectItem key={header} value={header}>
                         {header}
                       </SelectItem>
