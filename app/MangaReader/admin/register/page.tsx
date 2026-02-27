@@ -1,9 +1,15 @@
 /**
- * 真实的管理员登录页面
+ * 管理员注册页面
  *
- * 说明：为了安全考虑，将真实的后台登录路径设置为 /MangaReader/admin/login
- * 这样可以隐藏真实的后台入口，防止恶意访问
- * 原来的 /admin/login 会自动重定向到此页面
+ * 注意：这是开发期配置，允许公开注册
+ *
+ * 生产环境建议：
+ * 1. 关闭公开注册，改为邀请制或管理员创建
+ * 2. 启用邮箱验证
+ * 3. 添加注册审核机制
+ * 4. 实施用户角色和权限管理
+ *
+ * 参考 lib/auth-context.tsx 中的 signUp 方法注释了解更多安全建议
  */
 
 'use client';
@@ -18,42 +24,70 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn } = useAuth();
+  const { signUp } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // 前端验证
+    if (password !== confirmPassword) {
+      toast({
+        title: '注册失败',
+        description: '两次输入的密码不一致',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (password.length < 6) {
+      toast({
+        title: '注册失败',
+        description: '密码长度至少为 6 个字符',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
-      await signIn(email, password);
+      await signUp(email, password);
       toast({
-        title: '登录成功',
-        description: '欢迎回来！',
+        title: '注册成功',
+        description: '账号创建成功，正在跳转...',
       });
-      router.push('/admin');
-    } catch (error: any) {
-      console.error('Login error:', error);
 
-      let errorMessage = '邮箱或密码错误';
+      // 注册成功后跳转到管理后台
+      // 注意：如果启用了邮箱验证，用户需要先验证邮箱才能登录
+      setTimeout(() => {
+        router.push('/admin');
+      }, 1500);
+    } catch (error: any) {
+      console.error('Register error:', error);
+
+      let errorMessage = '注册失败，请稍后重试';
 
       if (error.message) {
-        if (error.message.includes('Email not confirmed')) {
-          errorMessage = '邮箱未确认。请前往 Supabase 后台确认用户邮箱。';
-        } else if (error.message.includes('Invalid login credentials')) {
-          errorMessage = '邮箱或密码错误，请检查输入';
+        if (error.message.includes('User already registered')) {
+          errorMessage = '该邮箱已被注册，请直接登录';
+        } else if (error.message.includes('Password should be at least')) {
+          errorMessage = '密码长度至少为 6 个字符';
+        } else if (error.message.includes('Signups not allowed')) {
+          errorMessage = '当前不允许注册，请联系管理员';
         } else {
           errorMessage = error.message;
         }
       }
 
       toast({
-        title: '登录失败',
+        title: '注册失败',
         description: errorMessage,
         variant: 'destructive',
       });
@@ -66,9 +100,9 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">管理员登录</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">创建管理员账号</CardTitle>
           <CardDescription className="text-center">
-            输入您的邮箱和密码以访问管理后台
+            输入您的邮箱和密码以创建新账号
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -89,25 +123,38 @@ export default function LoginPage() {
               <Input
                 id="password"
                 type="password"
-                placeholder="••••••••"
+                placeholder="至少 6 个字符"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                minLength={6}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">确认密码</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="再次输入密码"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                minLength={6}
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? '登录中...' : '登录'}
+              {loading ? '注册中...' : '注册'}
             </Button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
-              没有账号？{' '}
+              已有账号？{' '}
               <Link
-                href="/MangaReader/admin/register"
+                href="/MangaReader/admin/login"
                 className="text-blue-600 hover:text-blue-700 font-medium"
               >
-                立即注册
+                立即登录
               </Link>
             </p>
           </div>
