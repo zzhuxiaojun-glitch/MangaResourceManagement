@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { supabase, TitleWithCategory } from '@/lib/supabase';
 import { SidebarLayout } from '@/components/sidebar-layout';
 import { CategoryFilter } from '@/components/category-filter';
+import { ImageCarousel } from '@/components/image-carousel';
 import { MANGA_TAGS } from '@/lib/constants';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
@@ -143,17 +144,24 @@ export default function MangaPage() {
         ) : filteredTitles.length === 0 ? (
           <div className="text-center py-12 text-gray-500">没有找到相关作品</div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {filteredTitles.map((title) => (
               <Card key={title.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex items-start justify-between gap-2">
-                    <CardTitle className="text-lg">
-                      <Link href={`/t/${title.id}`} className="hover:text-blue-600">
-                        {title.title}
-                      </Link>
-                    </CardTitle>
+                <Link href={`/t/${title.id}`}>
+                  <div className="p-4">
+                    <ImageCarousel
+                      coverImage={title.cover_image}
+                      previewImages={title.preview_images}
+                      title={title.title}
+                    />
                   </div>
+                </Link>
+                <CardHeader className="pt-0">
+                  <CardTitle className="text-base">
+                    <Link href={`/t/${title.id}`} className="hover:text-blue-600">
+                      {title.title}
+                    </Link>
+                  </CardTitle>
                   <div className="flex gap-2 mt-2 flex-wrap">
                     {title.language && (
                       <Badge variant="outline" className="text-xs">

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { supabase, Category, TitleWithCategory } from '@/lib/supabase';
 import { SidebarLayout } from '@/components/sidebar-layout';
+import { ImageCarousel } from '@/components/image-carousel';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -100,11 +101,20 @@ export default function CategoryPage({ params }: { params: { categoryId: string 
         ) : titles.length === 0 ? (
           <div className="text-center py-12 text-gray-500">该分类下暂无资源</div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {titles.map((title) => (
               <Card key={title.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <CardTitle className="text-lg">
+                <Link href={`/t/${title.id}`}>
+                  <div className="p-4">
+                    <ImageCarousel
+                      coverImage={title.cover_image}
+                      previewImages={title.preview_images}
+                      title={title.title}
+                    />
+                  </div>
+                </Link>
+                <CardHeader className="pt-0">
+                  <CardTitle className="text-base">
                     <Link href={`/t/${title.id}`} className="hover:text-blue-600">
                       {title.title}
                     </Link>

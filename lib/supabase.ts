@@ -25,6 +25,8 @@ export type Title = {
   summary: string;
   japanese_title?: string;
   resource_link?: string;
+  cover_image?: string;
+  preview_images?: string[];
   created_at: string;
   updated_at: string;
 };

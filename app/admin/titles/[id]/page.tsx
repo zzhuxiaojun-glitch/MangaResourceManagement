@@ -32,8 +32,9 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Plus, Trash2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, AlertCircle, Upload, X, Image as ImageIcon } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 function TitleEditContent({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -52,6 +53,8 @@ function TitleEditContent({ params }: { params: { id: string } }) {
     summary: '',
     japanese_title: '',
     resource_link: '',
+    cover_image: '',
+    preview_images: [],
   });
   const [resources, setResources] = useState<Resource[]>([]);
   const [newResource, setNewResource] = useState({
@@ -99,6 +102,53 @@ function TitleEditContent({ params }: { params: { id: string } }) {
 
     setResources(data || []);
   }
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'cover' | 'preview') => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+    const maxSize = 5 * 1024 * 1024;
+
+    if (file.size > maxSize) {
+      toast({
+        title: '文件过大',
+        description: '图片大小不能超过 5MB',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result as string;
+      if (type === 'cover') {
+        setTitle({ ...title, cover_image: base64String });
+      } else {
+        const currentPreviews = title.preview_images || [];
+        if (currentPreviews.length >= 10) {
+          toast({
+            title: '数量限制',
+            description: '最多只能上传 10 张内页预览图',
+            variant: 'destructive',
+          });
+          return;
+        }
+        setTitle({ ...title, preview_images: [...currentPreviews, base64String] });
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveCoverImage = () => {
+    setTitle({ ...title, cover_image: '' });
+  };
+
+  const handleRemovePreviewImage = (index: number) => {
+    const currentPreviews = title.preview_images || [];
+    const newPreviews = currentPreviews.filter((_, i) => i !== index);
+    setTitle({ ...title, preview_images: newPreviews });
+  };
 
   const handleSaveTitle = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -433,6 +483,114 @@ function TitleEditContent({ params }: { params: { id: string } }) {
                   onChange={(e) => setTitle({ ...title, summary: e.target.value })}
                   rows={4}
                 />
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>封面图片</Label>
+                  <div className="flex items-start gap-4">
+                    <div className="flex-1">
+                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-gray-400 transition-colors">
+                        <input
+                          type="file"
+                          id="cover-upload"
+                          accept="image/*"
+                          onChange={(e) => handleImageUpload(e, 'cover')}
+                          className="hidden"
+                        />
+                        <label
+                          htmlFor="cover-upload"
+                          className="cursor-pointer flex flex-col items-center"
+                        >
+                          <Upload className="h-8 w-8 text-gray-400 mb-2" />
+                          <span className="text-sm text-gray-600">
+                            点击上传封面图片
+                          </span>
+                          <span className="text-xs text-gray-400 mt-1">
+                            支持 JPG、PNG，最大 5MB
+                          </span>
+                        </label>
+                      </div>
+                    </div>
+                    {title.cover_image && (
+                      <div className="relative w-32 h-32 border rounded-lg overflow-hidden">
+                        <Image
+                          src={title.cover_image}
+                          alt="封面预览"
+                          fill
+                          className="object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleRemoveCoverImage}
+                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>内页预览图（最多10张）</Label>
+                  <div className="space-y-4">
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-gray-400 transition-colors">
+                      <input
+                        type="file"
+                        id="preview-upload"
+                        accept="image/*"
+                        onChange={(e) => handleImageUpload(e, 'preview')}
+                        className="hidden"
+                        disabled={(title.preview_images?.length || 0) >= 10}
+                      />
+                      <label
+                        htmlFor="preview-upload"
+                        className={`cursor-pointer flex flex-col items-center ${
+                          (title.preview_images?.length || 0) >= 10
+                            ? 'opacity-50 cursor-not-allowed'
+                            : ''
+                        }`}
+                      >
+                        <ImageIcon className="h-8 w-8 text-gray-400 mb-2" />
+                        <span className="text-sm text-gray-600">
+                          点击上传内页预览图 ({title.preview_images?.length || 0}/10)
+                        </span>
+                        <span className="text-xs text-gray-400 mt-1">
+                          支持 JPG、PNG，最大 5MB
+                        </span>
+                      </label>
+                    </div>
+
+                    {title.preview_images && title.preview_images.length > 0 && (
+                      <div className="grid grid-cols-5 gap-4">
+                        {title.preview_images.map((img, index) => (
+                          <div
+                            key={index}
+                            className="relative aspect-square border rounded-lg overflow-hidden"
+                          >
+                            <Image
+                              src={img}
+                              alt={`预览 ${index + 1}`}
+                              fill
+                              className="object-cover"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleRemovePreviewImage(index)}
+                              className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                            <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs text-center py-1">
+                              {index + 1}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
 
               <Button type="submit">{isNew ? '创建作品' : '保存更改'}</Button>
