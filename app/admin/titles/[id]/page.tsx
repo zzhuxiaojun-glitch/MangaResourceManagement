@@ -50,6 +50,8 @@ function TitleEditContent({ params }: { params: { id: string } }) {
     language: '其他',
     status: '有效',
     summary: '',
+    japanese_title: '',
+    resource_link: '',
   });
   const [resources, setResources] = useState<Resource[]>([]);
   const [newResource, setNewResource] = useState({
@@ -389,6 +391,18 @@ function TitleEditContent({ params }: { params: { id: string } }) {
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="japanese_title">日文原名</Label>
+                <Input
+                  id="japanese_title"
+                  value={title.japanese_title}
+                  onChange={(e) =>
+                    setTitle({ ...title, japanese_title: e.target.value })
+                  }
+                  placeholder="例：僕のヒーローアカデミア"
+                />
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="alt_titles">别名（逗号分隔）</Label>
                 <Input
                   id="alt_titles"
@@ -396,6 +410,18 @@ function TitleEditContent({ params }: { params: { id: string } }) {
                   onChange={(e) =>
                     setTitle({ ...title, alt_titles: e.target.value })
                   }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="resource_link">资源链接</Label>
+                <Input
+                  id="resource_link"
+                  value={title.resource_link}
+                  onChange={(e) =>
+                    setTitle({ ...title, resource_link: e.target.value })
+                  }
+                  placeholder="https://..."
                 />
               </div>
 

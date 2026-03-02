@@ -23,6 +23,8 @@ export type Title = {
   language: string;
   status: string;
   summary: string;
+  japanese_title?: string;
+  resource_link?: string;
   created_at: string;
   updated_at: string;
 };
