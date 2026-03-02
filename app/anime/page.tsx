@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase, TitleWithCategory } from '@/lib/supabase';
-import { Navbar } from '@/components/navbar';
+import { SidebarLayout } from '@/components/sidebar-layout';
 import { CategoryFilter } from '@/components/category-filter';
 import { ANIME_TYPES } from '@/lib/constants';
 import Link from 'next/link';
@@ -79,10 +79,8 @@ export default function AnimePage() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-
-      <main className="container mx-auto px-4 py-8">
+    <SidebarLayout>
+      <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6">动画资源</h1>
 
         <div className="bg-white rounded-lg shadow p-6 mb-6">
@@ -208,7 +206,7 @@ export default function AnimePage() {
             ))}
           </div>
         )}
-      </main>
-    </div>
+      </div>
+    </SidebarLayout>
   );
 }

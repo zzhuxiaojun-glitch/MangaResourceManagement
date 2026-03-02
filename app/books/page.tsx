@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase, TitleWithCategory } from '@/lib/supabase';
-import { Navbar } from '@/components/navbar';
+import { SidebarLayout } from '@/components/sidebar-layout';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -67,10 +67,8 @@ export default function BooksPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-
-      <main className="container mx-auto px-4 py-8">
+    <SidebarLayout>
+      <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6">电子书资源</h1>
 
         <div className="bg-white rounded-lg shadow p-6 mb-6">
@@ -181,7 +179,7 @@ export default function BooksPage() {
             ))}
           </div>
         )}
-      </main>
-    </div>
+      </div>
+    </SidebarLayout>
   );
 }

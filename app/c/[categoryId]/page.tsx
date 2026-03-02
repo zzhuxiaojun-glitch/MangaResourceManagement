@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase, Category, TitleWithCategory } from '@/lib/supabase';
-import { Navbar } from '@/components/navbar';
+import { SidebarLayout } from '@/components/sidebar-layout';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -52,10 +52,8 @@ export default function CategoryPage({ params }: { params: { categoryId: string 
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-
-      <main className="container mx-auto px-4 py-8">
+    <SidebarLayout>
+      <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-4">{category?.name}</h1>
 
@@ -166,7 +164,7 @@ export default function CategoryPage({ params }: { params: { categoryId: string 
             ))}
           </div>
         )}
-      </main>
-    </div>
+      </div>
+    </SidebarLayout>
   );
 }

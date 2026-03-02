@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase, Category, TitleWithCategory } from '@/lib/supabase';
-import { Navbar } from '@/components/navbar';
+import { SidebarLayout } from '@/components/sidebar-layout';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -46,10 +46,8 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-
-      <main className="container mx-auto px-4 py-8">
+    <SidebarLayout>
+      <div className="container mx-auto px-4 py-8">
         {searchTerm && (
           <div className="mb-6">
             <h2 className="text-2xl font-bold">搜索结果：{searchTerm}</h2>
@@ -168,7 +166,7 @@ export default function HomePage() {
             </div>
           )}
         </section>
-      </main>
-    </div>
+      </div>
+    </SidebarLayout>
   );
 }

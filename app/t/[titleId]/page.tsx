@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase, TitleWithResources } from '@/lib/supabase';
-import { Navbar } from '@/components/navbar';
+import { SidebarLayout } from '@/components/sidebar-layout';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -42,27 +42,23 @@ export default function TitleDetailPage({ params }: { params: { titleId: string 
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
+      <SidebarLayout>
         <div className="container mx-auto px-4 py-8 text-center">加载中...</div>
-      </div>
+      </SidebarLayout>
     );
   }
 
   if (!title) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
+      <SidebarLayout>
         <div className="container mx-auto px-4 py-8 text-center">资源不存在</div>
-      </div>
+      </SidebarLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
+    <SidebarLayout>
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="bg-white rounded-lg shadow-md p-8 mb-6">
           <div className="mb-4">
             <Link
@@ -203,7 +199,7 @@ export default function TitleDetailPage({ params }: { params: { titleId: string 
             )}
           </CardContent>
         </Card>
-      </main>
-    </div>
+      </div>
+    </SidebarLayout>
   );
 }

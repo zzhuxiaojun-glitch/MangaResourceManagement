@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Search, LogIn, LayoutDashboard, LogOut } from 'lucide-react';
+import { Search, LayoutDashboard, LogOut, BookOpen, Video, Book } from 'lucide-react';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { useState } from 'react';
@@ -28,9 +28,9 @@ export function Navbar() {
   };
 
   const navLinks = [
-    { href: '/manga', label: '漫画' },
-    { href: '/anime', label: '动画' },
-    { href: '/books', label: '电子书' },
+    { href: '/manga', label: '漫画', icon: BookOpen },
+    { href: '/anime', label: '动画', icon: Video },
+    { href: '/books', label: '电子书', icon: Book },
   ];
 
   const maintainers = [
@@ -38,94 +38,99 @@ export function Navbar() {
   ];
 
   return (
-    <nav className="border-b bg-white sticky top-0 z-10 shadow-sm">
-      <div className="container mx-auto px-4 py-3">
-        <div className="flex items-center justify-between gap-4">
-          <Link href="/" className="text-2xl font-bold text-gray-800 hover:text-gray-600 whitespace-nowrap">
+    <div className="flex h-screen">
+      <aside className="w-64 bg-white border-r flex flex-col fixed left-0 top-0 h-full z-20">
+        <div className="p-6 border-b">
+          <Link href="/" className="text-2xl font-bold text-gray-800 hover:text-gray-600">
             漫画资源库
           </Link>
+        </div>
 
-          <div className="flex-1 max-w-2xl">
-            <form onSubmit={handleSearch} className="mb-2">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  type="text"
-                  placeholder="搜索作品、作者、标签..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </form>
+        <div className="p-4">
+          <form onSubmit={handleSearch}>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                type="text"
+                placeholder="搜索作品、作者、标签..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </form>
+        </div>
 
-            <div className="flex items-center justify-center gap-6">
-              {navLinks.map((link) => (
+        <nav className="flex-1 px-4 py-2">
+          <div className="space-y-1">
+            {navLinks.map((link) => {
+              const Icon = link.icon;
+              const isActive = pathname === link.href;
+              return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`text-sm font-medium transition-colors hover:text-blue-600 ${
-                    pathname === link.href ? 'text-blue-600' : 'text-gray-600'
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    isActive
+                      ? 'bg-blue-50 text-blue-600 font-medium'
+                      : 'text-gray-700 hover:bg-gray-50'
                   }`}
                 >
-                  {link.label}
+                  <Icon className="h-5 w-5" />
+                  <span>{link.label}</span>
                 </Link>
-              ))}
-            </div>
+              );
+            })}
           </div>
+        </nav>
 
-          <div className="flex items-center gap-3">
-            <div className="text-right">
-              <div className="text-xs text-gray-500 mb-1">网站维护者</div>
-              <div className="flex items-center gap-2">
-                {maintainers.map((maintainer, index) => (
-                  <span key={index}>
-                    {maintainer.url ? (
-                      <a
-                        href={maintainer.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
-                      >
-                        {maintainer.name}
-                      </a>
-                    ) : (
-                      <span className="text-sm font-medium text-gray-600 cursor-not-allowed">
-                        {maintainer.name}
-                      </span>
-                    )}
+        <div className="p-4 border-t mt-auto">
+          <div className="mb-4">
+            <div className="text-xs text-gray-500 mb-2">网站维护者</div>
+            {maintainers.map((maintainer, index) => (
+              <div key={index}>
+                {maintainer.url ? (
+                  <a
+                    href={maintainer.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                  >
+                    {maintainer.name}
+                  </a>
+                ) : (
+                  <span className="text-sm font-medium text-gray-600">
+                    {maintainer.name}
                   </span>
-                ))}
+                )}
               </div>
-              <div className="text-xs text-gray-400 mt-1">
-                点击维护者id，可查看维护者个人主页~
-              </div>
-            </div>
-
-            {/*
-              隐藏登录入口，防止恶意访问
-              登录页面路径由 lib/constants.ts 中的 ADMIN_BASE_PATH 定义
-              只是不在全站导航栏显示入口
-            */}
-            <div className="flex items-center gap-2 whitespace-nowrap border-l pl-3">
-              {user && (
-                <>
-                  <Link href="/admin">
-                    <Button variant="outline" size="sm">
-                      <LayoutDashboard className="h-4 w-4 mr-2" />
-                      后台
-                    </Button>
-                  </Link>
-                  <Button variant="ghost" size="sm" onClick={handleLogout}>
-                    <LogOut className="h-4 w-4 mr-2" />
-                    退出
-                  </Button>
-                </>
-              )}
+            ))}
+            <div className="text-xs text-gray-400 mt-1">
+              点击维护者id，可查看维护者个人主页~
             </div>
           </div>
+
+          {user && (
+            <div className="space-y-2">
+              <Link href="/admin" className="block">
+                <Button variant="outline" size="sm" className="w-full justify-start">
+                  <LayoutDashboard className="h-4 w-4 mr-2" />
+                  后台管理
+                </Button>
+              </Link>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLogout}
+                className="w-full justify-start"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                退出登录
+              </Button>
+            </div>
+          )}
         </div>
-      </div>
-    </nav>
+      </aside>
+    </div>
   );
 }
