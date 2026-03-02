@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, X } from 'lucide-react';
+import { Search, X, ExternalLink } from 'lucide-react';
 
 export default function MangaPage() {
   const [titles, setTitles] = useState<TitleWithCategory[]>([]);
@@ -175,7 +175,7 @@ export default function MangaPage() {
                     <p className="text-sm text-gray-600 mb-2">作者：{title.author}</p>
                   )}
                   {title.tags && (
-                    <div className="flex flex-wrap gap-1">
+                    <div className="flex flex-wrap gap-1 mb-2">
                       {title.tags
                         .split(',')
                         .filter((t) => t.trim())
@@ -190,9 +190,22 @@ export default function MangaPage() {
                     </div>
                   )}
                   {title.summary && (
-                    <p className="text-sm text-gray-500 mt-2 line-clamp-2">
+                    <p className="text-sm text-gray-500 mt-2 mb-3 line-clamp-2">
                       {title.summary}
                     </p>
+                  )}
+                  {title.resource_link && (
+                    <div className="mt-3 pt-3 border-t">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full"
+                        onClick={() => window.open(title.resource_link, '_blank')}
+                      >
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        访问资源页面
+                      </Button>
+                    </div>
                   )}
                 </CardContent>
               </Card>

@@ -5,8 +5,10 @@ import { supabase, Category, TitleWithCategory } from '@/lib/supabase';
 import { Navbar } from '@/components/navbar';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ExternalLink } from 'lucide-react';
 
 export default function CategoryPage({ params }: { params: { categoryId: string } }) {
   const [category, setCategory] = useState<Category | null>(null);
@@ -130,7 +132,7 @@ export default function CategoryPage({ params }: { params: { categoryId: string 
                     </p>
                   )}
                   {title.tags && (
-                    <div className="flex flex-wrap gap-1">
+                    <div className="flex flex-wrap gap-1 mb-2">
                       {title.tags.split(',').filter(t => t.trim()).map((tag, idx) => (
                         <span
                           key={idx}
@@ -142,9 +144,22 @@ export default function CategoryPage({ params }: { params: { categoryId: string 
                     </div>
                   )}
                   {title.summary && (
-                    <p className="text-sm text-gray-500 mt-2 line-clamp-2">
+                    <p className="text-sm text-gray-500 mt-2 mb-3 line-clamp-2">
                       {title.summary}
                     </p>
+                  )}
+                  {title.resource_link && (
+                    <div className="mt-3 pt-3 border-t">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full"
+                        onClick={() => window.open(title.resource_link, '_blank')}
+                      >
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        访问资源页面
+                      </Button>
+                    </div>
                   )}
                 </CardContent>
               </Card>
