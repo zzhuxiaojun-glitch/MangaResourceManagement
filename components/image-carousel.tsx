@@ -11,10 +11,11 @@ interface ImageCarouselProps {
   title: string;
 }
 
-export function ImageCarousel({ coverImage, previewImages = [], title }: ImageCarouselProps) {
+export function ImageCarousel({ coverImage, previewImages, title }: ImageCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const allImages = [coverImage, ...previewImages].filter(Boolean) as string[];
+  const validPreviewImages = Array.isArray(previewImages) ? previewImages : [];
+  const allImages = [coverImage, ...validPreviewImages].filter(Boolean) as string[];
 
   if (allImages.length === 0) {
     return (
