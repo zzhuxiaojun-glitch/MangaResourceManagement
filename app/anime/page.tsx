@@ -153,11 +153,18 @@ export default function AnimePage() {
                   </div>
                 </Link>
                 <CardHeader className="pt-0">
-                  <CardTitle className="text-base">
-                    <Link href={`/t/${title.id}`} className="hover:text-blue-600">
-                      {title.title}
-                    </Link>
-                  </CardTitle>
+                  <div>
+                    <CardTitle className="text-base">
+                      <Link href={`/t/${title.id}`} className="hover:text-blue-600">
+                        {title.title}
+                      </Link>
+                    </CardTitle>
+                    {title.japanese_title && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        {title.japanese_title}
+                      </p>
+                    )}
+                  </div>
                   <div className="flex gap-2 mt-2 flex-wrap">
                     {title.language && (
                       <Badge variant="outline" className="text-xs">

@@ -114,11 +114,18 @@ export default function HomePage() {
                 <Card key={title.id} className="hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <div className="flex items-start justify-between gap-2">
-                      <CardTitle className="text-lg">
-                        <Link href={`/t/${title.id}`} className="hover:text-blue-600">
-                          {title.title}
-                        </Link>
-                      </CardTitle>
+                      <div>
+                        <CardTitle className="text-lg">
+                          <Link href={`/t/${title.id}`} className="hover:text-blue-600">
+                            {title.title}
+                          </Link>
+                        </CardTitle>
+                        {title.japanese_title && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            {title.japanese_title}
+                          </p>
+                        )}
+                      </div>
                     </div>
                     <div className="flex gap-2 mt-2">
                       <Badge variant="secondary" className="text-xs">
