@@ -23,7 +23,8 @@ import {
   BookOpen,
   FolderTree,
   Upload,
-  LogOut
+  LogOut,
+  Home
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/button';
@@ -98,8 +99,17 @@ export function AdminSidebar() {
         })}
       </nav>
 
-      {/* 退出登录 */}
-      <div className="border-t border-gray-800 p-4">
+      {/* 前台首页和退出登录 */}
+      <div className="border-t border-gray-800 p-4 space-y-2">
+        <Link href="/">
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-3 text-gray-300 hover:bg-gray-800 hover:text-white"
+          >
+            <Home className="h-5 w-5" />
+            前台首页
+          </Button>
+        </Link>
         <Button
           onClick={handleLogout}
           variant="ghost"
