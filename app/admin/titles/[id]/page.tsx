@@ -107,37 +107,68 @@ function TitleEditContent({ params }: { params: { id: string } }) {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    const file = files[0];
     const maxSize = 5 * 1024 * 1024;
 
-    if (file.size > maxSize) {
-      toast({
-        title: '文件过大',
-        description: '图片大小不能超过 5MB',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64String = reader.result as string;
-      if (type === 'cover') {
-        setTitle({ ...title, cover_image: base64String });
-      } else {
-        const currentPreviews = title.preview_images || [];
-        if (currentPreviews.length >= 10) {
-          toast({
-            title: '数量限制',
-            description: '最多只能上传 10 张内页预览图',
-            variant: 'destructive',
-          });
-          return;
-        }
-        setTitle({ ...title, preview_images: [...currentPreviews, base64String] });
+    if (type === 'cover') {
+      const file = files[0];
+      if (file.size > maxSize) {
+        toast({
+          title: '文件过大',
+          description: '图片大小不能超过 5MB',
+          variant: 'destructive',
+        });
+        return;
       }
-    };
-    reader.readAsDataURL(file);
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setTitle({ ...title, cover_image: base64String });
+      };
+      reader.readAsDataURL(file);
+    } else {
+      const currentPreviews = title.preview_images || [];
+      const filesArray = Array.from(files);
+
+      if (currentPreviews.length + filesArray.length > 10) {
+        toast({
+          title: '数量限制',
+          description: `最多只能上传 10 张内页预览图（当前 ${currentPreviews.length} 张，尝试添加 ${filesArray.length} 张）`,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      const oversizedFiles = filesArray.filter(file => file.size > maxSize);
+      if (oversizedFiles.length > 0) {
+        toast({
+          title: '文件过大',
+          description: `有 ${oversizedFiles.length} 个文件超过 5MB，已跳过`,
+          variant: 'destructive',
+        });
+      }
+
+      const validFiles = filesArray.filter(file => file.size <= maxSize);
+      let processedCount = 0;
+      const newImages: string[] = [];
+
+      validFiles.forEach((file) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          newImages.push(reader.result as string);
+          processedCount++;
+
+          if (processedCount === validFiles.length) {
+            setTitle({ ...title, preview_images: [...currentPreviews, ...newImages] });
+            toast({
+              title: '上传成功',
+              description: `成功上传 ${newImages.length} 张图片`,
+            });
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    }
   };
 
   const handleRemoveCoverImage = () => {
@@ -540,6 +571,7 @@ function TitleEditContent({ params }: { params: { id: string } }) {
                         type="file"
                         id="preview-upload"
                         accept="image/*"
+                        multiple
                         onChange={(e) => handleImageUpload(e, 'preview')}
                         className="hidden"
                         disabled={(title.preview_images?.length || 0) >= 10}
@@ -554,10 +586,10 @@ function TitleEditContent({ params }: { params: { id: string } }) {
                       >
                         <ImageIcon className="h-8 w-8 text-gray-400 mb-2" />
                         <span className="text-sm text-gray-600">
-                          点击上传内页预览图 ({title.preview_images?.length || 0}/10)
+                          点击批量上传内页预览图 ({title.preview_images?.length || 0}/10)
                         </span>
                         <span className="text-xs text-gray-400 mt-1">
-                          支持 JPG、PNG，最大 5MB
+                          支持批量选择，JPG、PNG，每张最大 5MB
                         </span>
                       </label>
                     </div>
