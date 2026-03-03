@@ -32,7 +32,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Plus, Trash2, CircleAlert as AlertCircle, Upload, X, Image as ImageIcon, ChevronUp, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, CircleAlert as AlertCircle, Upload, X, Image as ImageIcon, GripVertical } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -63,6 +63,7 @@ function TitleEditContent({ params }: { params: { id: string } }) {
     extract_code: '',
     note: '',
   });
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
   useEffect(() => {
     loadCategories();
@@ -181,19 +182,35 @@ function TitleEditContent({ params }: { params: { id: string } }) {
     setTitle({ ...title, preview_images: newPreviews });
   };
 
-  const handleMovePreviewImage = (index: number, direction: 'up' | 'down') => {
-    const currentPreviews = title.preview_images || [];
-    if (
-      (direction === 'up' && index === 0) ||
-      (direction === 'down' && index === currentPreviews.length - 1)
-    ) {
+  const handleDragStart = (index: number) => {
+    setDraggedIndex(index);
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+
+    if (draggedIndex === null || draggedIndex === dropIndex) {
+      setDraggedIndex(null);
       return;
     }
 
+    const currentPreviews = title.preview_images || [];
     const newPreviews = [...currentPreviews];
-    const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    [newPreviews[index], newPreviews[targetIndex]] = [newPreviews[targetIndex], newPreviews[index]];
+    const draggedItem = newPreviews[draggedIndex];
+
+    newPreviews.splice(draggedIndex, 1);
+    newPreviews.splice(dropIndex, 0, draggedItem);
+
     setTitle({ ...title, preview_images: newPreviews });
+    setDraggedIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
   };
 
   const handleSaveTitle = async (e: React.FormEvent) => {
@@ -610,52 +627,43 @@ function TitleEditContent({ params }: { params: { id: string } }) {
                     </div>
 
                     {title.preview_images && title.preview_images.length > 0 && (
-                      <div className="grid grid-cols-5 gap-4">
-                        {title.preview_images.map((img, index) => (
-                          <div
-                            key={index}
-                            className="relative aspect-square border rounded-lg overflow-hidden group"
-                          >
-                            <Image
-                              src={img}
-                              alt={`预览 ${index + 1}`}
-                              fill
-                              className="object-cover"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => handleRemovePreviewImage(index)}
-                              className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-opacity"
+                      <div className="space-y-2">
+                        <p className="text-xs text-gray-500">拖动图片可调整顺序</p>
+                        <div className="grid grid-cols-5 gap-4">
+                          {title.preview_images.map((img, index) => (
+                            <div
+                              key={index}
+                              draggable
+                              onDragStart={() => handleDragStart(index)}
+                              onDragOver={(e) => handleDragOver(e, index)}
+                              onDrop={(e) => handleDrop(e, index)}
+                              onDragEnd={handleDragEnd}
+                              className={`relative aspect-square border rounded-lg overflow-hidden group cursor-move transition-all ${
+                                draggedIndex === index ? 'opacity-50 scale-95' : ''
+                              }`}
                             >
-                              <X className="h-3 w-3" />
-                            </button>
-                            <div className="absolute top-1 left-1 flex flex-col gap-1">
+                              <Image
+                                src={img}
+                                alt={`预览 ${index + 1}`}
+                                fill
+                                className="object-cover pointer-events-none"
+                              />
                               <button
                                 type="button"
-                                onClick={() => handleMovePreviewImage(index, 'up')}
-                                disabled={index === 0}
-                                className={`bg-blue-500 text-white rounded p-1 hover:bg-blue-600 transition-all ${
-                                  index === 0 ? 'opacity-30 cursor-not-allowed' : ''
-                                }`}
+                                onClick={() => handleRemovePreviewImage(index)}
+                                className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-opacity z-10"
                               >
-                                <ChevronUp className="h-3 w-3" />
+                                <X className="h-3 w-3" />
                               </button>
-                              <button
-                                type="button"
-                                onClick={() => handleMovePreviewImage(index, 'down')}
-                                disabled={index === title.preview_images!.length - 1}
-                                className={`bg-blue-500 text-white rounded p-1 hover:bg-blue-600 transition-all ${
-                                  index === title.preview_images!.length - 1 ? 'opacity-30 cursor-not-allowed' : ''
-                                }`}
-                              >
-                                <ChevronDown className="h-3 w-3" />
-                              </button>
+                              <div className="absolute top-1 left-1 bg-blue-500 text-white rounded p-1 opacity-70 group-hover:opacity-100 transition-opacity">
+                                <GripVertical className="h-3 w-3" />
+                              </div>
+                              <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs text-center py-1">
+                                {index + 1}
+                              </div>
                             </div>
-                            <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs text-center py-1">
-                              {index + 1}
-                            </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
