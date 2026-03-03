@@ -32,7 +32,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Plus, Trash2, AlertCircle, Upload, X, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, CircleAlert as AlertCircle, Upload, X, Image as ImageIcon } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
