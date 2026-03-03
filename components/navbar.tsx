@@ -1,19 +1,38 @@
 'use client';
 
 import Link from 'next/link';
-import { Search, LayoutDashboard, LogOut, BookOpen, Video, Book, MessageSquare } from 'lucide-react';
+import { Search, LayoutDashboard, LogOut, BookOpen, Video, Book, MessageSquare, LogIn, UserPlus, User } from 'lucide-react';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
 
 export function Navbar() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const { user } = useAuth();
+
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (user) {
+        const { data } = await supabase
+          .from('admins')
+          .select('id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        setIsAdmin(!!data);
+      } else {
+        setIsAdmin(false);
+      }
+    };
+
+    checkAdminStatus();
+  }, [user]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,14 +130,20 @@ export function Navbar() {
             </div>
           </div>
 
-          {user && (
+          {user ? (
             <div className="space-y-2">
-              <Link href="/admin" className="block">
-                <Button variant="outline" size="sm" className="w-full justify-start">
-                  <LayoutDashboard className="h-4 w-4 mr-2" />
-                  后台管理
-                </Button>
-              </Link>
+              <div className="flex items-center gap-2 px-2 py-1 mb-2">
+                <User className="h-4 w-4 text-gray-600" />
+                <span className="text-sm text-gray-600 truncate">{user.email}</span>
+              </div>
+              {isAdmin && (
+                <Link href="/admin" className="block">
+                  <Button variant="outline" size="sm" className="w-full justify-start">
+                    <LayoutDashboard className="h-4 w-4 mr-2" />
+                    后台管理
+                  </Button>
+                </Link>
+              )}
               <Button
                 variant="ghost"
                 size="sm"
@@ -128,6 +153,21 @@ export function Navbar() {
                 <LogOut className="h-4 w-4 mr-2" />
                 退出登录
               </Button>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <Link href="/login" className="block">
+                <Button variant="outline" size="sm" className="w-full justify-start">
+                  <LogIn className="h-4 w-4 mr-2" />
+                  登录
+                </Button>
+              </Link>
+              <Link href="/register" className="block">
+                <Button variant="ghost" size="sm" className="w-full justify-start">
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  注册
+                </Button>
+              </Link>
             </div>
           )}
         </div>

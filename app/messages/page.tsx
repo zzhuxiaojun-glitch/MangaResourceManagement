@@ -8,10 +8,21 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { X, Upload, Plus, Image as ImageIcon, GripVertical } from 'lucide-react';
+import { X, Upload, Plus, Image as ImageIcon, GripVertical, CreditCard as Edit2, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { SidebarLayout } from '@/components/sidebar-layout';
+import { useAuth } from '@/lib/auth-context';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface Message {
   id: string;
@@ -20,6 +31,7 @@ interface Message {
   referenced_title_id: string | null;
   custom_work_title: string | null;
   created_at: string;
+  created_by: string | null;
   titles?: {
     id: string;
     title: string;
@@ -36,6 +48,7 @@ interface Title {
 
 export default function MessagesPage() {
   const { toast } = useToast();
+  const { user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,6 +57,8 @@ export default function MessagesPage() {
   const [showForm, setShowForm] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const [content, setContent] = useState('');
   const [images, setImages] = useState<string[]>([]);
@@ -243,6 +258,58 @@ export default function MessagesPage() {
     setSearchResults([]);
     setSelectedTitle(null);
     setShowForm(false);
+    setEditingMessageId(null);
+  }
+
+  function startEdit(message: Message) {
+    setEditingMessageId(message.id);
+    setContent(message.content);
+    setImages(message.images || []);
+
+    if (message.referenced_title_id && message.titles) {
+      setWorkSelectionType('existing');
+      setReferencedTitleId(message.referenced_title_id);
+      setSelectedTitle({
+        id: message.titles.id,
+        title: message.titles.title,
+        japanese_title: message.titles.japanese_title,
+        main_type: '',
+      });
+    } else if (message.custom_work_title) {
+      setWorkSelectionType('custom');
+      setCustomWorkTitle(message.custom_work_title);
+    } else {
+      setWorkSelectionType('none');
+    }
+
+    setShowForm(true);
+  }
+
+  async function handleDelete(messageId: string) {
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .delete()
+        .eq('id', messageId);
+
+      if (error) throw error;
+
+      toast({
+        title: '删除成功',
+        description: '留言已删除',
+      });
+
+      await loadMessages();
+    } catch (error) {
+      console.error('Error deleting message:', error);
+      toast({
+        title: '删除失败',
+        description: '无法删除留言，请稍后重试',
+        variant: 'destructive',
+      });
+    } finally {
+      setDeleteConfirmId(null);
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -253,7 +320,6 @@ export default function MessagesPage() {
       const messageData: any = {
         content,
         images,
-        is_published: false,
       };
 
       if (workSelectionType === 'existing' && referencedTitleId) {
@@ -267,23 +333,52 @@ export default function MessagesPage() {
         messageData.custom_work_title = null;
       }
 
-      const { error } = await supabase
-        .from('messages')
-        .insert([messageData]);
+      if (editingMessageId) {
+        messageData.updated_at = new Date().toISOString();
 
-      if (error) throw error;
+        const { error } = await supabase
+          .from('messages')
+          .update(messageData)
+          .eq('id', editingMessageId);
 
-      toast({
-        title: '提交成功',
-        description: '您的留言已提交，待管理员审核后显示',
-      });
+        if (error) throw error;
+
+        toast({
+          title: '更新成功',
+          description: '您的留言已更新',
+        });
+      } else {
+        if (!user) {
+          toast({
+            title: '请先登录',
+            description: '登录后才能发布留言',
+            variant: 'destructive',
+          });
+          return;
+        }
+
+        messageData.is_published = false;
+        messageData.created_by = user.id;
+
+        const { error } = await supabase
+          .from('messages')
+          .insert([messageData]);
+
+        if (error) throw error;
+
+        toast({
+          title: '提交成功',
+          description: '您的留言已提交，待管理员审核后显示',
+        });
+      }
 
       resetForm();
+      await loadMessages();
     } catch (error) {
       console.error('Error submitting message:', error);
       toast({
-        title: '提交失败',
-        description: '无法提交留言，请稍后重试',
+        title: editingMessageId ? '更新失败' : '提交失败',
+        description: '操作失败，请稍后重试',
         variant: 'destructive',
       });
     } finally {
@@ -310,16 +405,27 @@ export default function MessagesPage() {
             <h1 className="text-3xl font-bold text-gray-800">留言板</h1>
             <p className="text-gray-600 mt-1">分享与交流</p>
           </div>
-          <Button onClick={() => setShowForm(!showForm)}>
-            <Plus className="h-4 w-4 mr-2" />
-            {showForm ? '取消' : '发表留言'}
-          </Button>
+          <div className="flex gap-2">
+            {!user && (
+              <Link href="/login">
+                <Button variant="outline">登录</Button>
+              </Link>
+            )}
+            {user && (
+              <Button onClick={() => { resetForm(); setShowForm(!showForm); }}>
+                <Plus className="h-4 w-4 mr-2" />
+                {showForm ? '取消' : '发表留言'}
+              </Button>
+            )}
+          </div>
         </div>
 
         {showForm && (
           <Card className="mb-6">
             <CardHeader>
-              <h2 className="text-xl font-semibold">发表新留言</h2>
+              <h2 className="text-xl font-semibold">
+                {editingMessageId ? '编辑留言' : '发表新留言'}
+              </h2>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -525,7 +631,7 @@ export default function MessagesPage() {
 
                 <div className="flex gap-3">
                   <Button type="submit" disabled={submitting}>
-                    {submitting ? '提交中...' : '提交留言'}
+                    {submitting ? (editingMessageId ? '更新中...' : '提交中...') : (editingMessageId ? '更新留言' : '提交留言')}
                   </Button>
                   <Button type="button" variant="outline" onClick={resetForm}>
                     取消
@@ -540,28 +646,50 @@ export default function MessagesPage() {
           {messages.map((message) => (
             <Card key={message.id} className="hover:shadow-md transition-shadow">
               <CardHeader className="border-b bg-gray-50">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                  <time className="text-sm text-gray-500">
-                    {new Date(message.created_at).toLocaleDateString('zh-CN', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                    })}
-                  </time>
-                  {(message.titles || message.custom_work_title) && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="text-gray-500">谈及的作品：</span>
-                      {message.titles ? (
-                        <Link
-                          href={`/t/${message.titles.id}`}
-                          className="font-medium text-blue-600 hover:text-blue-700 hover:underline"
-                        >
-                          {message.titles.title}
-                          {message.titles.japanese_title && ` (${message.titles.japanese_title})`}
-                        </Link>
-                      ) : (
-                        <span className="font-medium text-gray-700">{message.custom_work_title}</span>
-                      )}
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                  <div className="flex-1">
+                    <time className="text-sm text-gray-500">
+                      {new Date(message.created_at).toLocaleDateString('zh-CN', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })}
+                    </time>
+                    {(message.titles || message.custom_work_title) && (
+                      <div className="flex items-center gap-2 text-sm mt-1">
+                        <span className="text-gray-500">谈及的作品：</span>
+                        {message.titles ? (
+                          <Link
+                            href={`/t/${message.titles.id}`}
+                            className="font-medium text-blue-600 hover:text-blue-700 hover:underline"
+                          >
+                            {message.titles.title}
+                            {message.titles.japanese_title && ` (${message.titles.japanese_title})`}
+                          </Link>
+                        ) : (
+                          <span className="font-medium text-gray-700">{message.custom_work_title}</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  {user && message.created_by === user.id && (
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => startEdit(message)}
+                      >
+                        <Edit2 className="h-4 w-4 mr-1" />
+                        编辑
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setDeleteConfirmId(message.id)}
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        删除
+                      </Button>
                     </div>
                   )}
                 </div>
@@ -607,6 +735,26 @@ export default function MessagesPage() {
         </div>
         </div>
       </div>
+
+      <AlertDialog open={!!deleteConfirmId} onOpenChange={() => setDeleteConfirmId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>确认删除</AlertDialogTitle>
+            <AlertDialogDescription>
+              您确定要删除这条留言吗？此操作无法撤销。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteConfirmId && handleDelete(deleteConfirmId)}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              删除
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </SidebarLayout>
   );
 }
