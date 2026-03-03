@@ -18,14 +18,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import {
-  LayoutDashboard,
-  BookOpen,
-  FolderTree,
-  Upload,
-  LogOut,
-  Home
-} from 'lucide-react';
+import { LayoutDashboard, BookOpen, FolderTree, Upload, LogOut, Chrome as Home } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/button';
 
