@@ -18,7 +18,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, BookOpen, FolderTree, Upload, LogOut, Chrome as Home } from 'lucide-react';
+import { LayoutDashboard, BookOpen, FolderTree, Upload, LogOut, Chrome as Home, MessageSquare } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/button';
 
@@ -37,6 +37,11 @@ const navItems = [
     title: '分类管理',
     href: '/admin/categories',
     icon: FolderTree,
+  },
+  {
+    title: '留言管理',
+    href: '/admin/messages',
+    icon: MessageSquare,
   },
   {
     title: '批量导入',

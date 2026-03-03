@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Search, LayoutDashboard, LogOut, BookOpen, Video, Book } from 'lucide-react';
+import { Search, LayoutDashboard, LogOut, BookOpen, Video, Book, MessageSquare } from 'lucide-react';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { useState } from 'react';
@@ -31,6 +31,7 @@ export function Navbar() {
     { href: '/manga', label: '漫画', icon: BookOpen },
     { href: '/anime', label: '动画', icon: Video },
     { href: '/books', label: '电子书', icon: Book },
+    { href: '/messages', label: '留言板', icon: MessageSquare },
   ];
 
   const maintainers = [
