@@ -32,7 +32,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Plus, Trash2, CircleAlert as AlertCircle, Upload, X, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, CircleAlert as AlertCircle, Upload, X, Image as ImageIcon, ChevronUp, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -178,6 +178,21 @@ function TitleEditContent({ params }: { params: { id: string } }) {
   const handleRemovePreviewImage = (index: number) => {
     const currentPreviews = title.preview_images || [];
     const newPreviews = currentPreviews.filter((_, i) => i !== index);
+    setTitle({ ...title, preview_images: newPreviews });
+  };
+
+  const handleMovePreviewImage = (index: number, direction: 'up' | 'down') => {
+    const currentPreviews = title.preview_images || [];
+    if (
+      (direction === 'up' && index === 0) ||
+      (direction === 'down' && index === currentPreviews.length - 1)
+    ) {
+      return;
+    }
+
+    const newPreviews = [...currentPreviews];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    [newPreviews[index], newPreviews[targetIndex]] = [newPreviews[targetIndex], newPreviews[index]];
     setTitle({ ...title, preview_images: newPreviews });
   };
 
@@ -599,7 +614,7 @@ function TitleEditContent({ params }: { params: { id: string } }) {
                         {title.preview_images.map((img, index) => (
                           <div
                             key={index}
-                            className="relative aspect-square border rounded-lg overflow-hidden"
+                            className="relative aspect-square border rounded-lg overflow-hidden group"
                           >
                             <Image
                               src={img}
@@ -610,10 +625,32 @@ function TitleEditContent({ params }: { params: { id: string } }) {
                             <button
                               type="button"
                               onClick={() => handleRemovePreviewImage(index)}
-                              className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                              className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-opacity"
                             >
                               <X className="h-3 w-3" />
                             </button>
+                            <div className="absolute top-1 left-1 flex flex-col gap-1">
+                              <button
+                                type="button"
+                                onClick={() => handleMovePreviewImage(index, 'up')}
+                                disabled={index === 0}
+                                className={`bg-blue-500 text-white rounded p-1 hover:bg-blue-600 transition-all ${
+                                  index === 0 ? 'opacity-30 cursor-not-allowed' : ''
+                                }`}
+                              >
+                                <ChevronUp className="h-3 w-3" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleMovePreviewImage(index, 'down')}
+                                disabled={index === title.preview_images!.length - 1}
+                                className={`bg-blue-500 text-white rounded p-1 hover:bg-blue-600 transition-all ${
+                                  index === title.preview_images!.length - 1 ? 'opacity-30 cursor-not-allowed' : ''
+                                }`}
+                              >
+                                <ChevronDown className="h-3 w-3" />
+                              </button>
+                            </div>
                             <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs text-center py-1">
                               {index + 1}
                             </div>
