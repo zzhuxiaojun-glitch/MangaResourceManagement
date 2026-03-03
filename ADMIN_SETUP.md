@@ -1,5 +1,51 @@
 # 管理员账户设置指南
 
+## ⚠️ 重要：首先创建 admins 表
+
+如果执行 SQL 时出现错误 "relation 'admins' does not exist"，说明 `admins` 表还未创建。
+
+**请先在 Supabase SQL Editor 中执行以下 SQL：**
+
+```sql
+-- 创建 admins 表
+CREATE TABLE IF NOT EXISTS admins (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE UNIQUE NOT NULL,
+  created_at timestamptz DEFAULT now()
+);
+
+-- 启用行级安全
+ALTER TABLE admins ENABLE ROW LEVEL SECURITY;
+
+-- 创建策略：任何人都可以查询管理员状态
+DROP POLICY IF EXISTS "Anyone can check admin status" ON admins;
+CREATE POLICY "Anyone can check admin status"
+  ON admins
+  FOR SELECT
+  TO public
+  USING (true);
+```
+
+**然后添加你的账号为管理员：**
+
+```sql
+-- 将你的账号添加为管理员（替换为你的邮箱）
+INSERT INTO admins (user_id)
+SELECT id FROM auth.users WHERE email = 'zzhuxiaojun@gmail.com'
+ON CONFLICT (user_id) DO NOTHING;
+```
+
+**验证是否成功：**
+
+```sql
+-- 查看所有管理员
+SELECT a.id, u.email, a.created_at
+FROM admins a
+JOIN auth.users u ON a.user_id = u.id;
+```
+
+---
+
 ## 问题诊断
 
 如果您无法登录管理后台，可能是以下原因：
