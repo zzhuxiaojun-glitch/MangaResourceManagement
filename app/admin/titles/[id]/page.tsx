@@ -636,6 +636,9 @@ function TitleEditContent({ params }: { params: { id: string } }) {
                       <SelectContent>
                         <SelectItem value="BaiduPan">百度网盘</SelectItem>
                         <SelectItem value="AliyunDrive">阿里云盘</SelectItem>
+                        <SelectItem value="QuarkDrive">夸克云盘</SelectItem>
+                        <SelectItem value="GoogleDrive">Google云盘</SelectItem>
+                        <SelectItem value="115Drive">115网盘</SelectItem>
                         <SelectItem value="Mega">Mega</SelectItem>
                         <SelectItem value="Other">其他</SelectItem>
                       </SelectContent>
