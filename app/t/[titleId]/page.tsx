@@ -7,13 +7,15 @@ import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Copy, ExternalLink, CircleAlert as AlertCircle, CircleCheck as CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Copy, ExternalLink, CircleAlert as AlertCircle, CircleCheck as CheckCircle2, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export default function TitleDetailPage({ params }: { params: { titleId: string } }) {
   const [title, setTitle] = useState<TitleWithResources | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentImagePage, setCurrentImagePage] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxImageIndex, setLightboxImageIndex] = useState(0);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -67,6 +69,45 @@ export default function TitleDetailPage({ params }: { params: { titleId: string 
   const canGoPrevious = () => currentImagePage > 0;
   const canGoNext = () => currentImagePage < getTotalPages() - 1;
 
+  const openLightbox = (imageIndex: number) => {
+    setLightboxImageIndex(imageIndex);
+    setLightboxOpen(true);
+  };
+
+  const closeLightbox = () => {
+    setLightboxOpen(false);
+  };
+
+  const goToPreviousImage = () => {
+    if (lightboxImageIndex > 0) {
+      setLightboxImageIndex(lightboxImageIndex - 1);
+    }
+  };
+
+  const goToNextImage = () => {
+    const allImages = getAllImages();
+    if (lightboxImageIndex < allImages.length - 1) {
+      setLightboxImageIndex(lightboxImageIndex + 1);
+    }
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!lightboxOpen) return;
+
+      if (e.key === 'Escape') {
+        closeLightbox();
+      } else if (e.key === 'ArrowLeft') {
+        goToPreviousImage();
+      } else if (e.key === 'ArrowRight') {
+        goToNextImage();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [lightboxOpen, lightboxImageIndex]);
+
   if (loading) {
     return (
       <SidebarLayout>
@@ -85,6 +126,57 @@ export default function TitleDetailPage({ params }: { params: { titleId: string 
 
   return (
     <SidebarLayout>
+      {lightboxOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-95 z-50 flex items-center justify-center"
+          onClick={closeLightbox}
+        >
+          <button
+            className="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors"
+            onClick={closeLightbox}
+          >
+            <X className="h-8 w-8" />
+          </button>
+
+          <button
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              goToPreviousImage();
+            }}
+            disabled={lightboxImageIndex === 0}
+          >
+            <ChevronLeft className="h-12 w-12" />
+          </button>
+
+          <button
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              goToNextImage();
+            }}
+            disabled={lightboxImageIndex === getAllImages().length - 1}
+          >
+            <ChevronRight className="h-12 w-12" />
+          </button>
+
+          <div
+            className="max-w-7xl max-h-[90vh] mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={getAllImages()[lightboxImageIndex]}
+              alt={`${title.title} - 图 ${lightboxImageIndex + 1}`}
+              className="max-w-full max-h-[90vh] object-contain"
+            />
+          </div>
+
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white bg-black bg-opacity-50 px-4 py-2 rounded">
+            {lightboxImageIndex + 1} / {getAllImages().length}
+          </div>
+        </div>
+      )}
+
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="bg-white rounded-lg shadow-md p-8 mb-6">
           <div className="mb-4">
@@ -110,18 +202,22 @@ export default function TitleDetailPage({ params }: { params: { titleId: string 
             <div className="mb-6">
               <div className="relative">
                 <div className="grid grid-cols-5 gap-2">
-                  {getCurrentPageImages().map((image, idx) => (
-                    <div
-                      key={idx}
-                      className="aspect-[3/4] rounded-lg overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
-                    >
-                      <img
-                        src={image}
-                        alt={`${title.title} - 图 ${currentImagePage * 5 + idx + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  ))}
+                  {getCurrentPageImages().map((image, idx) => {
+                    const absoluteIndex = currentImagePage * 5 + idx;
+                    return (
+                      <div
+                        key={idx}
+                        className="aspect-[3/4] rounded-lg overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                        onClick={() => openLightbox(absoluteIndex)}
+                      >
+                        <img
+                          src={image}
+                          alt={`${title.title} - 图 ${absoluteIndex + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
 
                 {getTotalPages() > 1 && (
