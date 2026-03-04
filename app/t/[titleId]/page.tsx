@@ -7,12 +7,13 @@ import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Copy, ExternalLink, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Copy, ExternalLink, CircleAlert as AlertCircle, CircleCheck as CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export default function TitleDetailPage({ params }: { params: { titleId: string } }) {
   const [title, setTitle] = useState<TitleWithResources | null>(null);
   const [loading, setLoading] = useState(true);
+  const [currentImagePage, setCurrentImagePage] = useState(0);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -39,6 +40,32 @@ export default function TitleDetailPage({ params }: { params: { titleId: string 
       description: `${label}已复制到剪贴板`,
     });
   };
+
+  const getAllImages = () => {
+    if (!title) return [];
+    const images: string[] = [];
+    if (title.cover_image) {
+      images.push(title.cover_image);
+    }
+    if (title.preview_images && Array.isArray(title.preview_images)) {
+      images.push(...title.preview_images);
+    }
+    return images;
+  };
+
+  const getCurrentPageImages = () => {
+    const allImages = getAllImages();
+    const startIndex = currentImagePage * 5;
+    return allImages.slice(startIndex, startIndex + 5);
+  };
+
+  const getTotalPages = () => {
+    const allImages = getAllImages();
+    return Math.ceil(allImages.length / 5);
+  };
+
+  const canGoPrevious = () => currentImagePage > 0;
+  const canGoNext = () => currentImagePage < getTotalPages() - 1;
 
   if (loading) {
     return (
@@ -78,6 +105,56 @@ export default function TitleDetailPage({ params }: { params: { titleId: string 
               {title.status}
             </Badge>
           </div>
+
+          {getAllImages().length > 0 && (
+            <div className="mb-6">
+              <div className="relative">
+                <div className="grid grid-cols-5 gap-2">
+                  {getCurrentPageImages().map((image, idx) => (
+                    <div
+                      key={idx}
+                      className="aspect-[3/4] rounded-lg overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
+                    >
+                      <img
+                        src={image}
+                        alt={`${title.title} - 图 ${currentImagePage * 5 + idx + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                {getTotalPages() > 1 && (
+                  <div className="flex items-center justify-between mt-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentImagePage(currentImagePage - 1)}
+                      disabled={!canGoPrevious()}
+                    >
+                      <ChevronLeft className="h-4 w-4 mr-1" />
+                      上一页
+                    </Button>
+
+                    <span className="text-sm text-gray-600">
+                      第 {currentImagePage + 1} / {getTotalPages()} 页
+                      （共 {getAllImages().length} 张图片）
+                    </span>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentImagePage(currentImagePage + 1)}
+                      disabled={!canGoNext()}
+                    >
+                      下一页
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           <div className="space-y-3 text-gray-700">
             {title.author && (
