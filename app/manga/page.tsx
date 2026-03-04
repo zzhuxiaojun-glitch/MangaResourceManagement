@@ -207,8 +207,17 @@ export default function MangaPage() {
                       {title.summary}
                     </p>
                   )}
-                  {title.resource_link && (
-                    <div className="mt-3 pt-3 border-t">
+                  <div className="mt-3 pt-3 border-t space-y-2">
+                    <Link href={`/t/${title.id}`}>
+                      <Button
+                        variant="default"
+                        size="sm"
+                        className="w-full"
+                      >
+                        访问资源详情页
+                      </Button>
+                    </Link>
+                    {title.resource_link && (
                       <Button
                         variant="outline"
                         size="sm"
@@ -216,10 +225,10 @@ export default function MangaPage() {
                         onClick={() => window.open(title.resource_link, '_blank')}
                       >
                         <ExternalLink className="h-4 w-4 mr-2" />
-                        访问资源页面
+                        资源链接
                       </Button>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             ))}
