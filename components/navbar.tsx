@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Search, LayoutDashboard, LogOut, BookOpen, Video, Book, MessageSquare, LogIn, UserPlus, User, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, LayoutDashboard, LogOut, BookOpen, Video, Book, MessageSquare, LogIn, UserPlus, User, ChevronLeft, ChevronRight, Globe } from 'lucide-react';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { useState, useEffect } from 'react';
@@ -50,6 +50,7 @@ export function Navbar({ collapsed, onToggle }: { collapsed: boolean; onToggle: 
     { href: '/manga', label: '漫画', icon: BookOpen },
     { href: '/anime', label: '动画', icon: Video },
     { href: '/books', label: '电子书', icon: Book },
+    { href: '/platforms', label: '网站汇总', icon: Globe },
     { href: '/messages', label: '留言板', icon: MessageSquare },
   ];
 
