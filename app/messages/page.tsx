@@ -44,7 +44,10 @@ interface Title {
   id: string;
   title: string;
   japanese_title: string | null;
-  main_type: string;
+  category_id?: string;
+  categories?: {
+    name: string;
+  } | null;
 }
 
 export default function MessagesPage() {
@@ -71,18 +74,12 @@ export default function MessagesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Title[]>([]);
   const [selectedTitle, setSelectedTitle] = useState<Title | null>(null);
+  const [searching, setSearching] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
 
   useEffect(() => {
     loadMessages();
   }, []);
-
-  useEffect(() => {
-    if (searchQuery.length > 0) {
-      searchTitles();
-    } else {
-      setSearchResults([]);
-    }
-  }, [searchQuery]);
 
   async function loadMessages() {
     try {
@@ -109,17 +106,41 @@ export default function MessagesPage() {
   }
 
   async function searchTitles() {
+    if (!searchQuery.trim()) return;
+
+    setSearching(true);
+    setHasSearched(false);
+
     try {
       const { data, error } = await supabase
         .from('titles')
-        .select('id, title, japanese_title, main_type')
+        .select('id, title, japanese_title, category_id, categories(name)')
         .or(`title.ilike.%${searchQuery}%,japanese_title.ilike.%${searchQuery}%`)
-        .limit(10);
+        .limit(20);
 
       if (error) throw error;
-      setSearchResults(data || []);
+
+      const results: Title[] = (data || []).map((item: any) => ({
+        id: item.id,
+        title: item.title,
+        japanese_title: item.japanese_title,
+        category_id: item.category_id,
+        categories: item.categories && !Array.isArray(item.categories)
+          ? item.categories
+          : null,
+      }));
+
+      setSearchResults(results);
+      setHasSearched(true);
     } catch (error) {
       console.error('Error searching titles:', error);
+      toast({
+        title: '搜索失败',
+        description: '无法搜索作品，请稍后重试',
+        variant: 'destructive',
+      });
+    } finally {
+      setSearching(false);
     }
   }
 
@@ -260,6 +281,8 @@ export default function MessagesPage() {
     setSearchQuery('');
     setSearchResults([]);
     setSelectedTitle(null);
+    setSearching(false);
+    setHasSearched(false);
     setShowForm(false);
     setEditingMessageId(null);
   }
@@ -277,7 +300,6 @@ export default function MessagesPage() {
         id: message.titles.id,
         title: message.titles.title,
         japanese_title: message.titles.japanese_title,
-        main_type: '',
       });
     } else if (message.custom_work_title) {
       setWorkSelectionType('custom');
@@ -581,8 +603,11 @@ export default function MessagesPage() {
                       <div className="flex gap-2">
                         <Input
                           value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          placeholder="搜索漫画、动画、电子书..."
+                          onChange={(e) => {
+                            setSearchQuery(e.target.value);
+                            setHasSearched(false);
+                          }}
+                          placeholder="输入作品标题（中文或日文）..."
                           onKeyPress={(e) => {
                             if (e.key === 'Enter') {
                               e.preventDefault();
@@ -593,19 +618,23 @@ export default function MessagesPage() {
                         <Button
                           type="button"
                           onClick={searchTitles}
-                          disabled={!searchQuery.trim()}
+                          disabled={!searchQuery.trim() || searching}
                         >
-                          搜索
+                          {searching ? '搜索中...' : '搜索'}
                         </Button>
                       </div>
+
+                      <p className="text-xs text-gray-500">
+                        搜索条件：按作品的<strong>中文标题</strong>或<strong>日文标题</strong>进行模糊匹配（支持部分匹配）
+                      </p>
 
                       {selectedTitle && (
                         <div className="p-3 bg-blue-50 rounded border border-blue-200">
                           <div className="flex justify-between items-center">
                             <div>
-                              <p className="font-medium">{selectedTitle.title}</p>
+                              <p className="font-medium text-blue-900">已选择：{selectedTitle.title}</p>
                               {selectedTitle.japanese_title && (
-                                <p className="text-sm text-gray-600">{selectedTitle.japanese_title}</p>
+                                <p className="text-sm text-blue-700">{selectedTitle.japanese_title}</p>
                               )}
                             </div>
                             <Button
@@ -615,6 +644,7 @@ export default function MessagesPage() {
                               onClick={() => {
                                 setSelectedTitle(null);
                                 setReferencedTitleId(null);
+                                setHasSearched(false);
                               }}
                             >
                               <X className="h-4 w-4" />
@@ -623,26 +653,48 @@ export default function MessagesPage() {
                         </div>
                       )}
 
-                      {searchQuery && searchResults.length > 0 && !selectedTitle && (
-                        <div className="border rounded max-h-48 overflow-y-auto">
-                          {searchResults.map((title) => (
-                            <button
-                              key={title.id}
-                              type="button"
-                              className="w-full text-left p-3 hover:bg-gray-50 border-b last:border-b-0"
-                              onClick={() => {
-                                setSelectedTitle(title);
-                                setReferencedTitleId(title.id);
-                                setSearchQuery('');
-                                setSearchResults([]);
-                              }}
-                            >
-                              <p className="font-medium">{title.title}</p>
-                              {title.japanese_title && (
-                                <p className="text-sm text-gray-600">{title.japanese_title}</p>
-                              )}
-                            </button>
-                          ))}
+                      {!selectedTitle && hasSearched && searchResults.length === 0 && (
+                        <div className="p-4 bg-yellow-50 border border-yellow-200 rounded text-center">
+                          <p className="text-sm text-yellow-800">
+                            未找到匹配的作品「<strong>{searchQuery}</strong>」
+                          </p>
+                          <p className="text-xs text-yellow-600 mt-1">
+                            请尝试其他关键词，或使用"自定义标题"添加本站未收录的作品
+                          </p>
+                        </div>
+                      )}
+
+                      {!selectedTitle && searchResults.length > 0 && (
+                        <div>
+                          <p className="text-sm text-gray-600 mb-2">
+                            找到 {searchResults.length} 个结果，点击选择：
+                          </p>
+                          <div className="border rounded max-h-64 overflow-y-auto">
+                            {searchResults.map((title) => (
+                              <button
+                                key={title.id}
+                                type="button"
+                                className="w-full text-left p-3 hover:bg-gray-50 border-b last:border-b-0 transition-colors"
+                                onClick={() => {
+                                  setSelectedTitle(title);
+                                  setReferencedTitleId(title.id);
+                                  setSearchQuery('');
+                                  setSearchResults([]);
+                                  setHasSearched(false);
+                                }}
+                              >
+                                <p className="font-medium text-gray-900">{title.title}</p>
+                                {title.japanese_title && (
+                                  <p className="text-sm text-gray-600">{title.japanese_title}</p>
+                                )}
+                                {title.categories && (
+                                  <span className="inline-block mt-1 px-2 py-0.5 bg-gray-100 text-xs text-gray-700 rounded">
+                                    {title.categories.name}
+                                  </span>
+                                )}
+                              </button>
+                            ))}
+                          </div>
                         </div>
                       )}
                     </TabsContent>
