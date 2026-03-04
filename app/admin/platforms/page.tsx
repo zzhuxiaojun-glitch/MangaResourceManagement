@@ -22,6 +22,11 @@ interface PlatformCategory {
   sort_order: number;
 }
 
+interface RepresentativeWork {
+  name: string;
+  url: string;
+}
+
 interface MangaPlatform {
   id: string;
   category_id: string;
@@ -29,8 +34,10 @@ interface MangaPlatform {
   japanese_title: string;
   description: string;
   publisher: string;
+  publisher_url: string;
   platform_type: string;
   representative_works: string[];
+  representative_work_links: RepresentativeWork[];
   website_url: string;
   images: string[];
   sort_order: number;
@@ -53,8 +60,10 @@ export default function AdminPlatformsPage() {
     japanese_title: '',
     description: '',
     publisher: '',
+    publisher_url: '',
     platform_type: '',
     representative_works: [] as string[],
+    representative_work_links: [] as RepresentativeWork[],
     website_url: '',
     images: [] as string[],
     sort_order: 0,
@@ -62,6 +71,7 @@ export default function AdminPlatformsPage() {
   });
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [newWork, setNewWork] = useState('');
+  const [newWorkUrl, setNewWorkUrl] = useState('');
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -167,19 +177,23 @@ export default function AdminPlatformsPage() {
   }
 
   function addRepresentativeWork() {
-    if (newWork.trim() && formData.representative_works.length < 10) {
+    if (newWork.trim() && formData.representative_work_links.length < 10) {
       setFormData({
         ...formData,
-        representative_works: [...formData.representative_works, newWork.trim()],
+        representative_work_links: [
+          ...formData.representative_work_links,
+          { name: newWork.trim(), url: newWorkUrl.trim() }
+        ],
       });
       setNewWork('');
+      setNewWorkUrl('');
     }
   }
 
   function removeRepresentativeWork(index: number) {
     setFormData({
       ...formData,
-      representative_works: formData.representative_works.filter((_, i) => i !== index),
+      representative_work_links: formData.representative_work_links.filter((_, i) => i !== index),
     });
   }
 
@@ -191,14 +205,17 @@ export default function AdminPlatformsPage() {
       japanese_title: '',
       description: '',
       publisher: '',
+      publisher_url: '',
       platform_type: '',
       representative_works: [],
+      representative_work_links: [],
       website_url: '',
       images: [],
       sort_order: 0,
       is_active: true,
     });
     setNewWork('');
+    setNewWorkUrl('');
     setDialogOpen(true);
   }
 
@@ -210,14 +227,17 @@ export default function AdminPlatformsPage() {
       japanese_title: platform.japanese_title || '',
       description: platform.description,
       publisher: platform.publisher || '',
+      publisher_url: platform.publisher_url || '',
       platform_type: platform.platform_type || '',
       representative_works: platform.representative_works || [],
+      representative_work_links: platform.representative_work_links || [],
       website_url: platform.website_url,
       images: platform.images || [],
       sort_order: platform.sort_order,
       is_active: platform.is_active,
     });
     setNewWork('');
+    setNewWorkUrl('');
     setDialogOpen(true);
   }
 
@@ -334,6 +354,18 @@ export default function AdminPlatformsPage() {
                   id="publisher"
                   value={formData.publisher}
                   onChange={(e) => setFormData({ ...formData, publisher: e.target.value })}
+                  placeholder="例如：小学館"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="publisher_url">发行方链接（可选）</Label>
+                <Input
+                  id="publisher_url"
+                  type="url"
+                  value={formData.publisher_url}
+                  onChange={(e) => setFormData({ ...formData, publisher_url: e.target.value })}
+                  placeholder="https://www.shogakukan.co.jp/"
                 />
               </div>
 
@@ -351,9 +383,10 @@ export default function AdminPlatformsPage() {
                 <Label>代表作品（最多10个）</Label>
                 <div className="space-y-2">
                   <div className="flex flex-wrap gap-2">
-                    {formData.representative_works.map((work, index) => (
+                    {formData.representative_work_links.map((work, index) => (
                       <Badge key={index} variant="secondary" className="gap-1">
-                        {work}
+                        {work.name}
+                        {work.url && <span className="text-xs ml-1">🔗</span>}
                         <button
                           type="button"
                           onClick={() => removeRepresentativeWork(index)}
@@ -364,12 +397,23 @@ export default function AdminPlatformsPage() {
                       </Badge>
                     ))}
                   </div>
-                  {formData.representative_works.length < 10 && (
-                    <div className="flex gap-2">
+                  {formData.representative_work_links.length < 10 && (
+                    <div className="space-y-2">
                       <Input
                         value={newWork}
                         onChange={(e) => setNewWork(e.target.value)}
-                        placeholder="输入作品名称"
+                        placeholder="作品名称"
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addRepresentativeWork();
+                          }
+                        }}
+                      />
+                      <Input
+                        value={newWorkUrl}
+                        onChange={(e) => setNewWorkUrl(e.target.value)}
+                        placeholder="作品链接（可选）"
                         onKeyPress={(e) => {
                           if (e.key === 'Enter') {
                             e.preventDefault();
@@ -381,8 +425,9 @@ export default function AdminPlatformsPage() {
                         type="button"
                         variant="outline"
                         onClick={addRepresentativeWork}
+                        disabled={!newWork.trim()}
                       >
-                        添加
+                        添加作品
                       </Button>
                     </div>
                   )}
