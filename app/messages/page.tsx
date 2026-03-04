@@ -26,6 +26,7 @@ import {
 
 interface Message {
   id: string;
+  title: string;
   content: string;
   images: string[];
   referenced_title_id: string | null;
@@ -60,6 +61,7 @@ export default function MessagesPage() {
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
+  const [messageTitle, setMessageTitle] = useState('');
   const [content, setContent] = useState('');
   const [images, setImages] = useState<string[]>([]);
   const [imageInput, setImageInput] = useState('');
@@ -248,6 +250,7 @@ export default function MessagesPage() {
   }
 
   function resetForm() {
+    setMessageTitle('');
     setContent('');
     setImages([]);
     setImageInput('');
@@ -263,6 +266,7 @@ export default function MessagesPage() {
 
   function startEdit(message: Message) {
     setEditingMessageId(message.id);
+    setMessageTitle(message.title || '');
     setContent(message.content);
     setImages(message.images || []);
 
@@ -318,6 +322,7 @@ export default function MessagesPage() {
 
     try {
       const messageData: any = {
+        title: messageTitle.trim(),
         content,
         images,
       };
@@ -429,6 +434,17 @@ export default function MessagesPage() {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <Label htmlFor="messageTitle">留言标题</Label>
+                  <Input
+                    id="messageTitle"
+                    value={messageTitle}
+                    onChange={(e) => setMessageTitle(e.target.value)}
+                    placeholder="为你的留言起个标题..."
+                    required
+                  />
+                </div>
+
                 <div>
                   <Label htmlFor="content">留言内容</Label>
                   <Textarea
@@ -562,11 +578,26 @@ export default function MessagesPage() {
                     </TabsContent>
 
                     <TabsContent value="existing" className="mt-3 space-y-3">
-                      <Input
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="搜索漫画、动画、电子书..."
-                      />
+                      <div className="flex gap-2">
+                        <Input
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          placeholder="搜索漫画、动画、电子书..."
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              searchTitles();
+                            }
+                          }}
+                        />
+                        <Button
+                          type="button"
+                          onClick={searchTitles}
+                          disabled={!searchQuery.trim()}
+                        >
+                          搜索
+                        </Button>
+                      </div>
 
                       {selectedTitle && (
                         <div className="p-3 bg-blue-50 rounded border border-blue-200">
@@ -648,6 +679,11 @@ export default function MessagesPage() {
               <CardHeader className="border-b bg-gray-50">
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                   <div className="flex-1">
+                    {message.title && (
+                      <h3 className="text-lg font-semibold text-gray-800 mb-1">
+                        {message.title}
+                      </h3>
+                    )}
                     <time className="text-sm text-gray-500">
                       {new Date(message.created_at).toLocaleDateString('zh-CN', {
                         year: 'numeric',
