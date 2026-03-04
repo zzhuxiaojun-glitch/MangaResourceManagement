@@ -144,11 +144,11 @@ function PlatformCard({ platform }: { platform: MangaPlatform }) {
   return (
     <Link href={`/platforms/${platform.id}`}>
       <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2 border-orange-400">
-        <div className="flex gap-3 p-4">
-          {/* 左侧图片 */}
-          <div className="flex-shrink-0">
+        <div className="p-4">
+          {/* 图片 */}
+          <div className="mb-3">
             {platform.images && platform.images.length > 0 ? (
-              <div className="relative w-24 h-24 bg-gray-200 rounded overflow-hidden">
+              <div className="relative w-full aspect-square bg-gray-200 rounded overflow-hidden">
                 <img
                   src={platform.images[0]}
                   alt={platform.name}
@@ -156,30 +156,35 @@ function PlatformCard({ platform }: { platform: MangaPlatform }) {
                 />
               </div>
             ) : (
-              <div className="w-24 h-24 bg-gray-200 rounded flex items-center justify-center text-gray-400 text-xs">
+              <div className="w-full aspect-square bg-gray-200 rounded flex items-center justify-center text-gray-400 text-xs">
                 图片
               </div>
             )}
           </div>
 
-          {/* 右侧内容 */}
-          <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-orange-600 mb-1 truncate">
+          {/* 网站名称 */}
+          <div className="mb-3">
+            <h3 className="font-bold text-orange-600 text-base leading-tight mb-1">
               {platform.name}
-              {platform.japanese_title && (
-                <span className="text-sm ml-1">({platform.japanese_title})</span>
-              )}
             </h3>
+            {platform.japanese_title && (
+              <p className="text-sm text-gray-500 leading-tight">
+                {platform.japanese_title}
+              </p>
+            )}
+          </div>
 
+          {/* 其他信息 */}
+          <div className="space-y-1">
             {platform.publisher && (
-              <p className="text-sm text-gray-700 mb-1">
+              <p className="text-sm text-gray-700">
                 <span className="font-medium">发行方：</span>
                 {platform.publisher}
               </p>
             )}
 
             {platform.platform_type && (
-              <p className="text-sm text-gray-700 mb-1">
+              <p className="text-sm text-gray-700">
                 <span className="font-medium">平台：</span>
                 {platform.platform_type}
               </p>
