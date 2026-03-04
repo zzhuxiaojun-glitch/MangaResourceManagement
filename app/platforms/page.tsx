@@ -168,12 +168,12 @@ function PlatformCard({ platform }: { platform: MangaPlatform }) {
 
   return (
     <Link href={`/platforms/${platform.id}`}>
-      <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2 border-orange-400 rounded-xl">
-        <div className="p-4">
+      <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2 border-orange-400">
+        <div className="p-3">
           {/* 图片 */}
-          <div className="mb-3">
+          <div className="mb-2">
             {platform.images && platform.images.length > 0 ? (
-              <div className="relative w-full h-40 bg-gray-200 rounded-lg overflow-hidden">
+              <div className="relative w-full h-32 bg-gray-200 rounded overflow-hidden">
                 <img
                   src={platform.images[0]}
                   alt={platform.name}
@@ -181,32 +181,32 @@ function PlatformCard({ platform }: { platform: MangaPlatform }) {
                 />
               </div>
             ) : (
-              <div className="w-full h-40 bg-gray-200 rounded-lg flex items-center justify-center text-gray-400 text-xs">
+              <div className="w-full h-32 bg-gray-200 rounded flex items-center justify-center text-gray-400 text-xs">
                 图片
               </div>
             )}
           </div>
 
           {/* 网站名称 */}
-          <div className="mb-3">
-            <h3 className="font-bold text-orange-600 text-lg leading-tight mb-1">
+          <div className="mb-2">
+            <h3 className="font-bold text-orange-600 text-base leading-tight mb-0.5">
               {platform.name}
             </h3>
             {platform.japanese_title && (
-              <p className="text-sm text-gray-500 leading-tight">
+              <p className="text-xs text-gray-500 leading-tight">
                 {platform.japanese_title}
               </p>
             )}
           </div>
 
           {/* 其他信息 */}
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             {platform.publisher && (
-              <div className="flex items-start gap-1">
-                <span className="text-sm text-gray-700 whitespace-nowrap">发行方：</span>
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-gray-600">发行方：</span>
                 <Badge
                   variant="secondary"
-                  className={`text-sm px-3 py-1 bg-blue-100 text-blue-700 hover:bg-blue-200 ${platform.publisher_url ? 'cursor-pointer' : ''}`}
+                  className={`text-xs px-2 py-0.5 bg-blue-100 text-blue-700 hover:bg-blue-200 ${platform.publisher_url ? 'cursor-pointer' : ''}`}
                   onClick={platform.publisher_url ? handlePublisherClick : undefined}
                 >
                   {platform.publisher}
@@ -215,9 +215,9 @@ function PlatformCard({ platform }: { platform: MangaPlatform }) {
             )}
 
             {platform.platform_type && (
-              <div className="flex items-start gap-1">
-                <span className="text-sm text-gray-700 whitespace-nowrap">平台：</span>
-                <Badge variant="secondary" className="text-sm px-3 py-1 bg-green-100 text-green-700">
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-gray-600">平台：</span>
+                <Badge variant="secondary" className="text-xs px-2 py-0.5 bg-green-100 text-green-700">
                   {platform.platform_type}
                 </Badge>
               </div>
@@ -225,13 +225,13 @@ function PlatformCard({ platform }: { platform: MangaPlatform }) {
 
             {works.length > 0 && (
               <div>
-                <div className="text-sm text-gray-700 mb-1.5">代表作品：</div>
-                <div className="flex flex-col gap-1.5">
+                <div className="text-xs text-gray-600 mb-1">代表作品：</div>
+                <div className="flex flex-col gap-1">
                   {works.slice(0, 3).map((work, index) => (
                     <Badge
                       key={index}
                       variant="secondary"
-                      className={`text-sm px-3 py-1 bg-amber-50 text-amber-800 hover:bg-amber-100 ${work.url ? 'cursor-pointer' : ''} w-fit`}
+                      className={`text-xs px-2 py-0.5 bg-amber-100 text-amber-700 hover:bg-amber-200 ${work.url ? 'cursor-pointer' : ''} w-fit`}
                       onClick={work.url ? (e) => handleWorkClick(e, work.url) : undefined}
                     >
                       {work.name}
