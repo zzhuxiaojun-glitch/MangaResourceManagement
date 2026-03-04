@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Plus, Pencil, Trash2, Upload, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, Upload, X, GripVertical } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 
@@ -26,7 +26,11 @@ interface MangaPlatform {
   id: string;
   category_id: string;
   name: string;
+  japanese_title: string;
   description: string;
+  publisher: string;
+  platform_type: string;
+  representative_works: string[];
   website_url: string;
   images: string[];
   sort_order: number;
@@ -46,12 +50,18 @@ export default function AdminPlatformsPage() {
   const [formData, setFormData] = useState({
     category_id: '',
     name: '',
+    japanese_title: '',
     description: '',
+    publisher: '',
+    platform_type: '',
+    representative_works: [] as string[],
     website_url: '',
     images: [] as string[],
     sort_order: 0,
     is_active: true,
   });
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [newWork, setNewWork] = useState('');
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -135,17 +145,60 @@ export default function AdminPlatformsPage() {
     });
   }
 
+  function handleDragStart(index: number) {
+    setDraggedIndex(index);
+  }
+
+  function handleDragOver(e: React.DragEvent, index: number) {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === index) return;
+
+    const newImages = [...formData.images];
+    const draggedImage = newImages[draggedIndex];
+    newImages.splice(draggedIndex, 1);
+    newImages.splice(index, 0, draggedImage);
+
+    setFormData({ ...formData, images: newImages });
+    setDraggedIndex(index);
+  }
+
+  function handleDragEnd() {
+    setDraggedIndex(null);
+  }
+
+  function addRepresentativeWork() {
+    if (newWork.trim() && formData.representative_works.length < 10) {
+      setFormData({
+        ...formData,
+        representative_works: [...formData.representative_works, newWork.trim()],
+      });
+      setNewWork('');
+    }
+  }
+
+  function removeRepresentativeWork(index: number) {
+    setFormData({
+      ...formData,
+      representative_works: formData.representative_works.filter((_, i) => i !== index),
+    });
+  }
+
   function openCreateDialog() {
     setEditingPlatform(null);
     setFormData({
       category_id: categories[0]?.id || '',
       name: '',
+      japanese_title: '',
       description: '',
+      publisher: '',
+      platform_type: '',
+      representative_works: [],
       website_url: '',
       images: [],
       sort_order: 0,
       is_active: true,
     });
+    setNewWork('');
     setDialogOpen(true);
   }
 
@@ -154,12 +207,17 @@ export default function AdminPlatformsPage() {
     setFormData({
       category_id: platform.category_id,
       name: platform.name,
+      japanese_title: platform.japanese_title || '',
       description: platform.description,
+      publisher: platform.publisher || '',
+      platform_type: platform.platform_type || '',
+      representative_works: platform.representative_works || [],
       website_url: platform.website_url,
       images: platform.images || [],
       sort_order: platform.sort_order,
       is_active: platform.is_active,
     });
+    setNewWork('');
     setDialogOpen(true);
   }
 
@@ -261,6 +319,77 @@ export default function AdminPlatformsPage() {
               </div>
 
               <div>
+                <Label htmlFor="japanese_title">日文标题（可选）</Label>
+                <Input
+                  id="japanese_title"
+                  value={formData.japanese_title}
+                  onChange={(e) => setFormData({ ...formData, japanese_title: e.target.value })}
+                  placeholder="例如：マンガワン"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="publisher">发行方（可选）</Label>
+                <Input
+                  id="publisher"
+                  value={formData.publisher}
+                  onChange={(e) => setFormData({ ...formData, publisher: e.target.value })}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="platform_type">平台类型（可选）</Label>
+                <Input
+                  id="platform_type"
+                  value={formData.platform_type}
+                  onChange={(e) => setFormData({ ...formData, platform_type: e.target.value })}
+                  placeholder="例如：网站+APP"
+                />
+              </div>
+
+              <div>
+                <Label>代表作品（最多10个）</Label>
+                <div className="space-y-2">
+                  <div className="flex flex-wrap gap-2">
+                    {formData.representative_works.map((work, index) => (
+                      <Badge key={index} variant="secondary" className="gap-1">
+                        {work}
+                        <button
+                          type="button"
+                          onClick={() => removeRepresentativeWork(index)}
+                          className="ml-1 hover:text-red-600"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                  {formData.representative_works.length < 10 && (
+                    <div className="flex gap-2">
+                      <Input
+                        value={newWork}
+                        onChange={(e) => setNewWork(e.target.value)}
+                        placeholder="输入作品名称"
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addRepresentativeWork();
+                          }
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={addRepresentativeWork}
+                      >
+                        添加
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div>
                 <Label htmlFor="description">详细介绍</Label>
                 <Textarea
                   id="description"
@@ -281,11 +410,24 @@ export default function AdminPlatformsPage() {
               </div>
 
               <div>
-                <Label>图片（最多5张）</Label>
+                <Label>图片（最多5张，可拖动排序）</Label>
                 <div className="mt-2">
                   <div className="grid grid-cols-3 gap-2 mb-2">
                     {formData.images.map((url, index) => (
-                      <div key={index} className="relative">
+                      <div
+                        key={index}
+                        draggable
+                        onDragStart={() => handleDragStart(index)}
+                        onDragOver={(e) => handleDragOver(e, index)}
+                        onDragEnd={handleDragEnd}
+                        className="relative cursor-move group"
+                      >
+                        <div className="absolute top-1 left-1 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-xs z-10">
+                          {index + 1}
+                        </div>
+                        <div className="absolute top-1 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <GripVertical className="h-5 w-5 text-white drop-shadow-lg" />
+                        </div>
                         <img
                           src={url}
                           alt={`预览 ${index + 1}`}
@@ -313,6 +455,7 @@ export default function AdminPlatformsPage() {
                         disabled={uploading}
                       />
                       {uploading && <p className="text-sm text-gray-500 mt-1">上传中...</p>}
+                      <p className="text-xs text-gray-500 mt-1">提示：可以拖动图片改变顺序</p>
                     </div>
                   )}
                 </div>

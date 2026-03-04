@@ -50,7 +50,7 @@ export function Navbar({ collapsed, onToggle }: { collapsed: boolean; onToggle: 
     { href: '/manga', label: '漫画', icon: BookOpen },
     { href: '/anime', label: '动画', icon: Video },
     { href: '/books', label: '电子书', icon: Book },
-    { href: '/platforms', label: '网站汇总', icon: Globe },
+    { href: '/platforms', label: '漫画网站', icon: Globe },
     { href: '/messages', label: '留言板', icon: MessageSquare },
   ];
 

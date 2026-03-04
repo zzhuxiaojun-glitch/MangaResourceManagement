@@ -3,11 +3,10 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { SidebarLayout } from '@/components/sidebar-layout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ExternalLink } from 'lucide-react';
-import { ImageCarousel } from '@/components/image-carousel';
+import Link from 'next/link';
 
 interface PlatformCategory {
   id: string;
@@ -20,7 +19,11 @@ interface MangaPlatform {
   id: string;
   category_id: string;
   name: string;
+  japanese_title: string;
   description: string;
+  publisher: string;
+  platform_type: string;
+  representative_works: string[];
   website_url: string;
   images: string[];
   sort_order: number;
@@ -99,7 +102,6 @@ export default function PlatformsPage() {
         ) : (
           <div className="space-y-12">
             {selectedCategory === 'all' ? (
-              // 显示所有分类
               categories.map((category) => {
                 const categoryPlatforms = getPlatformsByCategory(category.id);
                 if (categoryPlatforms.length === 0) return null;
@@ -110,7 +112,7 @@ export default function PlatformsPage() {
                       <h2 className="text-2xl font-bold mb-2">{category.name}</h2>
                       <div className="h-1 w-20 bg-blue-600 rounded"></div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {categoryPlatforms.map((platform) => (
                         <PlatformCard key={platform.id} platform={platform} />
                       ))}
@@ -119,8 +121,7 @@ export default function PlatformsPage() {
                 );
               })
             ) : (
-              // 显示选中的分类
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredPlatforms.map((platform) => (
                   <PlatformCard key={platform.id} platform={platform} />
                 ))}
@@ -141,37 +142,60 @@ export default function PlatformsPage() {
 
 function PlatformCard({ platform }: { platform: MangaPlatform }) {
   return (
-    <Card className="hover:shadow-lg transition-shadow">
-      {platform.images && platform.images.length > 0 && (
-        <div className="p-4">
-          <ImageCarousel
-            coverImage={platform.images[0]}
-            previewImages={platform.images.slice(1)}
-            title={platform.name}
-          />
+    <Link href={`/platforms/${platform.id}`}>
+      <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2 border-orange-400">
+        <div className="flex gap-3 p-4">
+          {/* 左侧图片 */}
+          <div className="flex-shrink-0">
+            {platform.images && platform.images.length > 0 ? (
+              <div className="relative w-24 h-24 bg-gray-200 rounded overflow-hidden">
+                <img
+                  src={platform.images[0]}
+                  alt={platform.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ) : (
+              <div className="w-24 h-24 bg-gray-200 rounded flex items-center justify-center text-gray-400 text-xs">
+                图片
+              </div>
+            )}
+          </div>
+
+          {/* 右侧内容 */}
+          <div className="flex-1 min-w-0">
+            <h3 className="font-bold text-orange-600 mb-1 truncate">
+              {platform.name}
+              {platform.japanese_title && (
+                <span className="text-sm ml-1">({platform.japanese_title})</span>
+              )}
+            </h3>
+
+            {platform.publisher && (
+              <p className="text-sm text-gray-700 mb-1">
+                <span className="font-medium">发行方：</span>
+                {platform.publisher}
+              </p>
+            )}
+
+            {platform.platform_type && (
+              <p className="text-sm text-gray-700 mb-1">
+                <span className="font-medium">平台：</span>
+                {platform.platform_type}
+              </p>
+            )}
+
+            {platform.representative_works && platform.representative_works.length > 0 && (
+              <div className="text-sm text-gray-700">
+                <span className="font-medium">代表作品：</span>
+                <span className="text-gray-600">
+                  {platform.representative_works.slice(0, 3).join('、')}
+                </span>
+              </div>
+            )}
+          </div>
         </div>
-      )}
-      <CardHeader>
-        <CardTitle className="text-lg">{platform.name}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {platform.description && (
-          <p className="text-sm text-gray-600 mb-4 whitespace-pre-wrap">
-            {platform.description}
-          </p>
-        )}
-        {platform.website_url && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full"
-            onClick={() => window.open(platform.website_url, '_blank')}
-          >
-            <ExternalLink className="h-4 w-4 mr-2" />
-            访问官网
-          </Button>
-        )}
-      </CardContent>
-    </Card>
+      </Card>
+    </Link>
   );
 }
