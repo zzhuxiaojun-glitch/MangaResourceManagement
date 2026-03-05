@@ -64,9 +64,19 @@ export default function MessageFormPage({ params }: { params: { id: string } }) 
           )
         `)
         .eq('id', params.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+
+      if (!data) {
+        toast({
+          title: '留言不存在',
+          description: '未找到该留言',
+          variant: 'destructive',
+        });
+        router.push('/admin/messages');
+        return;
+      }
 
       setMessageTitle(data.title || '');
       setContent(data.content || '');
