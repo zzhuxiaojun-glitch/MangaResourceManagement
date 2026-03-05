@@ -17,6 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { ImageViewer } from '@/components/image-viewer';
 
 interface Message {
   id: string;
@@ -37,6 +38,9 @@ export default function MessagesPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [viewerImages, setViewerImages] = useState<string[]>([]);
+  const [viewerInitialIndex, setViewerInitialIndex] = useState(0);
+  const [showViewer, setShowViewer] = useState(false);
 
   useEffect(() => {
     loadMessages();
@@ -94,6 +98,12 @@ export default function MessagesPage() {
     } finally {
       setDeleteId(null);
     }
+  }
+
+  function openImageViewer(images: string[], index: number) {
+    setViewerImages(images);
+    setViewerInitialIndex(index);
+    setShowViewer(true);
   }
 
   if (loading) {
@@ -179,7 +189,8 @@ export default function MessagesPage() {
                       key={idx}
                       src={img}
                       alt={`Image ${idx + 1}`}
-                      className="w-full h-24 object-cover rounded"
+                      className="w-full h-24 object-cover rounded cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={() => openImageViewer(message.images, idx)}
                     />
                   ))}
                 </div>
@@ -211,6 +222,14 @@ export default function MessagesPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {showViewer && (
+        <ImageViewer
+          images={viewerImages}
+          initialIndex={viewerInitialIndex}
+          onClose={() => setShowViewer(false)}
+        />
+      )}
     </div>
   );
 }

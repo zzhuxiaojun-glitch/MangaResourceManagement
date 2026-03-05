@@ -23,6 +23,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { ImageViewer } from '@/components/image-viewer';
 
 interface Message {
   id: string;
@@ -76,6 +77,9 @@ export default function MessagesPage() {
   const [selectedTitle, setSelectedTitle] = useState<Title | null>(null);
   const [searching, setSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [viewerImages, setViewerImages] = useState<string[]>([]);
+  const [viewerInitialIndex, setViewerInitialIndex] = useState(0);
+  const [showViewer, setShowViewer] = useState(false);
 
   useEffect(() => {
     loadMessages();
@@ -411,6 +415,12 @@ export default function MessagesPage() {
     } finally {
       setSubmitting(false);
     }
+  }
+
+  function openImageViewer(images: string[], index: number) {
+    setViewerImages(images);
+    setViewerInitialIndex(index);
+    setShowViewer(true);
   }
 
   if (loading) {
@@ -792,7 +802,8 @@ export default function MessagesPage() {
                       <img
                         src={message.images[0]}
                         alt="Message image"
-                        className="w-full max-h-80 object-contain rounded-lg"
+                        className="w-full max-h-80 object-contain rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                        onClick={() => openImageViewer(message.images, 0)}
                       />
                     ) : (
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -801,7 +812,8 @@ export default function MessagesPage() {
                             <img
                               src={img}
                               alt={`Image ${idx + 1}`}
-                              className="w-full h-32 object-cover rounded"
+                              className="w-full h-32 object-cover rounded cursor-pointer hover:opacity-90 transition-opacity"
+                              onClick={() => openImageViewer(message.images, idx)}
                             />
                           </div>
                         ))}
@@ -843,6 +855,14 @@ export default function MessagesPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {showViewer && (
+        <ImageViewer
+          images={viewerImages}
+          initialIndex={viewerInitialIndex}
+          onClose={() => setShowViewer(false)}
+        />
+      )}
     </SidebarLayout>
   );
 }
