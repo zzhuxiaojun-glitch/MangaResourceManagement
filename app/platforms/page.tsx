@@ -119,7 +119,7 @@ export default function PlatformsPage() {
                       <h2 className="text-2xl font-bold mb-2">{category.name}</h2>
                       <div className="h-1 w-20 bg-blue-600 rounded"></div>
                     </div>
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                       {categoryPlatforms.map((platform) => (
                         <PlatformCard key={platform.id} platform={platform} />
                       ))}
@@ -128,7 +128,7 @@ export default function PlatformsPage() {
                 );
               })
             ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {filteredPlatforms.map((platform) => (
                   <PlatformCard key={platform.id} platform={platform} />
                 ))}
@@ -169,11 +169,11 @@ function PlatformCard({ platform }: { platform: MangaPlatform }) {
   return (
     <Link href={`/platforms/${platform.id}`}>
       <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-        <div className="p-4 flex gap-4">
-          {/* 左侧图片 */}
-          <div className="flex-shrink-0">
+        <div className="p-3">
+          {/* 图片 */}
+          <div className="mb-3">
             {platform.images && platform.images.length > 0 ? (
-              <div className="relative w-48 h-36 bg-gray-200 rounded overflow-hidden">
+              <div className="relative w-full h-40 bg-gray-200 rounded overflow-hidden">
                 <img
                   src={platform.images[0]}
                   alt={platform.name}
@@ -181,68 +181,65 @@ function PlatformCard({ platform }: { platform: MangaPlatform }) {
                 />
               </div>
             ) : (
-              <div className="w-48 h-36 bg-gray-200 rounded flex items-center justify-center text-gray-400 text-xs">
+              <div className="w-full h-40 bg-gray-200 rounded flex items-center justify-center text-gray-400 text-xs">
                 图片
               </div>
             )}
           </div>
 
-          {/* 右侧内容 */}
-          <div className="flex-1 flex flex-col justify-between min-w-0">
-            {/* 网站名称 */}
-            <div className="mb-3">
-              <h3 className="font-bold text-blue-600 text-lg leading-tight mb-1">
-                {platform.name}
-              </h3>
-              {platform.japanese_title && (
-                <p className="text-sm text-gray-500 leading-tight">
-                  {platform.japanese_title}
-                </p>
-              )}
-            </div>
+          {/* 网站名称 */}
+          <div className="mb-2">
+            <h3 className="font-bold text-blue-600 text-base leading-tight mb-0.5">
+              {platform.name}
+            </h3>
+            {platform.japanese_title && (
+              <p className="text-xs text-gray-500 leading-tight">
+                {platform.japanese_title}
+              </p>
+            )}
+          </div>
 
-            {/* 其他信息 */}
-            <div className="space-y-2">
-              {platform.publisher && (
-                <div className="flex items-center gap-1">
-                  <span className="text-sm text-gray-600">发行方：</span>
-                  <Badge
-                    variant="secondary"
-                    className={`text-sm px-2 py-0.5 bg-blue-100 text-blue-700 hover:bg-blue-200 ${platform.publisher_url ? 'cursor-pointer' : ''}`}
-                    onClick={platform.publisher_url ? handlePublisherClick : undefined}
-                  >
-                    {platform.publisher}
-                  </Badge>
-                </div>
-              )}
+          {/* 其他信息 */}
+          <div className="space-y-1.5">
+            {platform.publisher && (
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-gray-600">发行方：</span>
+                <Badge
+                  variant="secondary"
+                  className={`text-xs px-2 py-0.5 bg-blue-100 text-blue-700 hover:bg-blue-200 ${platform.publisher_url ? 'cursor-pointer' : ''}`}
+                  onClick={platform.publisher_url ? handlePublisherClick : undefined}
+                >
+                  {platform.publisher}
+                </Badge>
+              </div>
+            )}
 
-              {platform.platform_type && (
-                <div className="flex items-center gap-1">
-                  <span className="text-sm text-gray-600">平台：</span>
-                  <Badge variant="secondary" className="text-sm px-2 py-0.5 bg-green-100 text-green-700">
-                    {platform.platform_type}
-                  </Badge>
-                </div>
-              )}
+            {platform.platform_type && (
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-gray-600">平台：</span>
+                <Badge variant="secondary" className="text-xs px-2 py-0.5 bg-green-100 text-green-700">
+                  {platform.platform_type}
+                </Badge>
+              </div>
+            )}
 
-              {works.length > 0 && (
-                <div>
-                  <div className="text-sm text-gray-600 mb-1.5">代表作品：</div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {works.slice(0, 3).map((work, index) => (
-                      <Badge
-                        key={index}
-                        variant="secondary"
-                        className={`text-sm px-2 py-0.5 bg-amber-100 text-amber-700 hover:bg-amber-200 ${work.url ? 'cursor-pointer' : ''}`}
-                        onClick={work.url ? (e) => handleWorkClick(e, work.url) : undefined}
-                      >
-                        {work.name}
-                      </Badge>
-                    ))}
-                  </div>
+            {works.length > 0 && (
+              <div>
+                <div className="text-xs text-gray-600 mb-1">代表作品：</div>
+                <div className="flex flex-col gap-1">
+                  {works.slice(0, 3).map((work, index) => (
+                    <Badge
+                      key={index}
+                      variant="secondary"
+                      className={`text-xs px-2 py-0.5 bg-amber-100 text-amber-700 hover:bg-amber-200 ${work.url ? 'cursor-pointer' : ''} w-fit`}
+                      onClick={work.url ? (e) => handleWorkClick(e, work.url) : undefined}
+                    >
+                      {work.name}
+                    </Badge>
+                  ))}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </Card>
