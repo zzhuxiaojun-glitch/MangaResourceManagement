@@ -1,10 +1,7 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import { AuthProvider } from '@/lib/auth-context';
 import { Toaster } from '@/components/ui/toaster';
-
-const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: '漫画资源库',
@@ -18,7 +15,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="zh-CN">
-      <body className={inter.className}>
+      <body className="font-sans">
         <AuthProvider>
           {children}
           <Toaster />
